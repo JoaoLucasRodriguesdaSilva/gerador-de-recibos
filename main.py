@@ -3,7 +3,7 @@ import sys
 import os
 
 # Adiciona o diretório raiz do projeto ao path para permitir importações de módulos
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), )))
 
 from database.criar_bd import criar_db
 from database.receitas import (
