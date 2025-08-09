@@ -27,7 +27,7 @@ from database.receita_tarefa import (
     get_valor_total_from_receita
 )
 
-def run_tests():
+def test_database_workflow():
     """Executa um conjunto de testes para as funções de requisição ao banco de dados."""
     print("--- Iniciando testes ---")
     
@@ -121,4 +121,4 @@ def run_tests():
     print("\n--- Testes concluídos com sucesso! ---")
 
 if __name__ == '__main__':
-    run_tests()
+    test_database_workflow()
