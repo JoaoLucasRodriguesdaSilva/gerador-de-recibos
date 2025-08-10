@@ -2,15 +2,15 @@
 from .criar_bd import connect_db
 
 # Criar receita
-def add_receita(cliente, oficina, motor_cabecote, placa):
+def add_receita(cliente, oficina, motor_cabecote, placa, data):
     """Adiciona uma nova receita ao banco de dados."""
     conn = connect_db()
     cursor = conn.cursor()
     
     cursor.execute('''
-        INSERT INTO receitas (cliente, oficina, motor_cabecote, placa)
-        VALUES (?, ?, ?, ?)
-    ''', (cliente, oficina, motor_cabecote, placa))
+        INSERT INTO receitas (cliente, oficina, motor_cabecote, placa, data)
+        VALUES (?, ?, ?, ?, ?)
+    ''', (cliente, oficina, motor_cabecote, placa, data))
     receita_id = cursor.lastrowid
 
     cursor.close()
@@ -73,7 +73,7 @@ def get_receita_by_cliente(cliente):
     return receita
 
 # Atualizar receita
-def update_receita(receita_id, cliente, oficina, motor_cabecote, placa):
+def update_receita(receita_id, cliente, oficina, motor_cabecote, placa, data):
     """Atualiza uma receita existente."""
     conn = connect_db()
     cursor = conn.cursor()
@@ -82,7 +82,7 @@ def update_receita(receita_id, cliente, oficina, motor_cabecote, placa):
         UPDATE receitas
         SET cliente = ?, oficina = ?, motor_cabecote = ?, placa = ?
         WHERE id = ?
-    ''', (cliente, oficina, motor_cabecote, placa, receita_id))
+    ''', (cliente, oficina, motor_cabecote, placa, receita_id, data))
 
     cursor.close()
     conn.commit()

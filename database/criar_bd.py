@@ -27,7 +27,8 @@ def create_table():
             cliente TEXT NOT NULL,
             oficina TEXT NOT NULL,
             motor_cabecote TEXT NOT NULL,
-            placa TEXT NOT NULL
+            placa TEXT NOT NULL,
+            data TEXT NOT NULL
         )
     ''')
 
