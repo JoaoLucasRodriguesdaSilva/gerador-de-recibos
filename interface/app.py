@@ -20,7 +20,7 @@ def add_item():
 # --- Main Application Window ---
 root = tk.Tk()
 root.title("Input and Column Display")
-root.geometry("300x400") # Set a default size
+root.geometry("1024x800") # Set a default size
 
 # --- Main Frame ---
 main_frame = ttk.Frame(root, padding="10")
