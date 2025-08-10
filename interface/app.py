@@ -23,7 +23,7 @@ root.title("Input and Column Display")
 root.geometry("1024x600") # Set a default size
 
 # --- Main Frame ---
-main_frame = ttk.Frame(root, padding="100")
+main_frame = ttk.Frame(root, padding="10")
 main_frame.pack(fill="both", expand=True)
 
 # --- Input Section ---
