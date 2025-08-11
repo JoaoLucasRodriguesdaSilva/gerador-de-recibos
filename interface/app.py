@@ -15,7 +15,7 @@ root.title("Gerenciador de Receitas")
 root.geometry("1024x600") # Set a default size
 
 # --- Frame Principal ---
-main_frame = ttk.Frame(root)
+main_frame = ttk.Frame(root, padding=10)
 main_frame.pack(fill="both", expand=True)
 
 # --- Seção Receitas ---

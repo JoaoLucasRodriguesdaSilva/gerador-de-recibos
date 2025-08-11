@@ -10,7 +10,7 @@ from database.receitas import add_receita, get_all_receitas, delete_receita
 
 class ReceitasFrame(ttk.Frame):
     def __init__(self, parent):
-        super().__init__(parent, padding="10")
+        super().__init__(parent)
         
         self.create_widgets()
         self.populate_receitas_list()
