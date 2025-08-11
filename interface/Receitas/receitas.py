@@ -40,7 +40,7 @@ class ReceitasFrame(ttk.Frame):
         ttk.Label(management_frame, text="Data:").grid(row=2, column=0, padx=5, pady=5, sticky="w")
         self.data_entry = ttk.Entry(management_frame, width=40)
         self.data_entry.grid(row=2, column=1, padx=5, pady=5, sticky="ew")
-        self.data_entry.insert(0, datetime.now().strftime("%Y-%m-%d"))
+        self.data_entry.insert(0, datetime.now().strftime("%Y/%m/%d"))
 
         # --- Botões de Ação ---
         button_frame = ttk.Frame(management_frame)
@@ -123,4 +123,4 @@ class ReceitasFrame(ttk.Frame):
         self.motor_entry.delete(0, "end")
         self.placa_entry.delete(0, "end")
         self.data_entry.delete(0, "end")
-        self.data_entry.insert(0, datetime.now().strftime("%Y-%m-%d"))
+        self.data_entry.insert(0, datetime.now().strftime("%Y/%m/%d"))
