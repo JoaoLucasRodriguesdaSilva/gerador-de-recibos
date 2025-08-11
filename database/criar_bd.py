@@ -35,9 +35,7 @@ def create_table():
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS tarefas (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            quantidade INTEGER NOT NULL,
-            nome TEXT NOT NULL,
-            observacoes TEXT
+            nome TEXT NOT NULL
         )
     ''')
 
@@ -46,9 +44,11 @@ def create_table():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             receita_id INTEGER NOT NULL,
             tarefa_id INTEGER NOT NULL,
+            quantidade INTEGER NOT NULL,
             valor REAL NOT NULL,
+            observacoes TEXT NOT NULL,
             FOREIGN KEY (receita_id) REFERENCES receitas(id) ON DELETE CASCADE,
-            FOREIGN KEY (tarefa_id) REFERENCES tarefas(id) ON DELETE CASCADE
+            FOREIGN KEY (tarefa_id) REFERENCES tarefas(id)
         )
     ''')
 

@@ -72,6 +72,19 @@ def get_receita_by_cliente(cliente):
     conn.close()
     return receita
 
+# Obter receita por data
+def get_receita_by_data(data):
+    """Retorna uma receita específica pela data."""
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    cursor.execute('SELECT * FROM receitas WHERE data = ?', (data,))
+    receita = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+    return receita
+
 # Atualizar receita
 def update_receita(receita_id, cliente, oficina, motor_cabecote, placa, data):
     """Atualiza uma receita existente."""
@@ -80,9 +93,9 @@ def update_receita(receita_id, cliente, oficina, motor_cabecote, placa, data):
 
     cursor.execute('''
         UPDATE receitas
-        SET cliente = ?, oficina = ?, motor_cabecote = ?, placa = ?
+        SET cliente = ?, oficina = ?, motor_cabecote = ?, placa = ?, data = ?
         WHERE id = ?
-    ''', (cliente, oficina, motor_cabecote, placa, receita_id, data))
+    ''', (cliente, oficina, motor_cabecote, placa, data, receita_id))
 
     cursor.close()
     conn.commit()

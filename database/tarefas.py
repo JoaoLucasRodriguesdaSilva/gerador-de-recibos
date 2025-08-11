@@ -2,15 +2,15 @@
 from .criar_bd import connect_db
 
 # Criar tarefa
-def add_tarefa(quantidade, nome, observacoes):
+def add_tarefa(nome):
     """Adiciona uma nova tarefa."""
     conn = connect_db()
     cursor = conn.cursor()
 
     cursor.execute('''
-        INSERT INTO tarefas (quantidade, nome, observacoes)
-        VALUES (?, ?, ?)
-    ''', (quantidade, nome, observacoes))
+        INSERT INTO tarefas (nome)
+        VALUES (?)
+    ''', (nome,))
     tarefa_id = cursor.lastrowid
 
     cursor.close()
@@ -19,16 +19,16 @@ def add_tarefa(quantidade, nome, observacoes):
     return tarefa_id
 
 # Atualizar tarefa
-def update_tarefa(tarefa_id, quantidade, nome, observacoes):
+def update_tarefa(tarefa_id, nome):
     """Atualiza uma tarefa existente."""
     conn = connect_db()
     cursor = conn.cursor()
 
     cursor.execute('''
         UPDATE tarefas
-        SET quantidade = ?, nome = ?, observacoes = ?
+        SET nome = ?
         WHERE id = ?
-    ''', (quantidade, nome, observacoes, tarefa_id))
+    ''', (nome, tarefa_id))
 
     cursor.close()
     conn.commit()

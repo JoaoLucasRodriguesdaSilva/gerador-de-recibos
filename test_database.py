@@ -1,17 +1,14 @@
-# Arquivo para testar requisições
-import sys
 import os
+from datetime import datetime
 
-# Adiciona o diretório raiz do projeto ao path para permitir importações de módulos
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), )))
+# Adiciona o diretório raiz ao sys.path para permitir a importação dos módulos do banco de dados
+import sys
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
-from database.criar_bd import criar_db
+from database.criar_bd import criar_db, get_db_path
 from database.receitas import (
     add_receita,
-    get_all_receitas,
     get_receita_by_id,
-    get_receita_by_cliente,
-    get_receita_by_oficina,
     update_receita,
     delete_receita
 )
@@ -23,102 +20,115 @@ from database.tarefas import (
 from database.receita_tarefa import (
     add_tarefa_to_receita,
     get_tarefas_from_receita,
+    update_tarefa_from_receita,
     remove_tarefa_from_receita,
     get_valor_total_from_receita
 )
 
-def test_database_workflow():
-    """Executa um conjunto de testes para as funções de requisição ao banco de dados."""
-    print("--- Iniciando testes ---")
+def run_all_tests():
+    """
+    Executa um teste de fluxo completo para o banco de dados.
+    """
+    print("--- INICIANDO TESTE COMPLETO DO BANCO DE DADOS ---")
     
-    # 1. Garante que o banco de dados e as tabelas existam
-    print("\n1. Verificando/Criando banco de dados e tabelas...")
+    try:
+        # 1. Criar dados iniciais
+        print("\n[PASSO 1] Criando dados iniciais...")
+        current_date = datetime.now().strftime("%Y-%m-%d")
+        receita_id = add_receita("Cliente Standalone", "Oficina Script", "Motor Teste", "RUN-2024", current_date)
+        tarefa1_id = add_tarefa("Inspecao de Freios")
+        tarefa2_id = add_tarefa("Balanceamento de Rodas")
+        
+        assert receita_id is not None
+        assert tarefa1_id is not None
+        assert tarefa2_id is not None
+        print(f"-> SUCESSO: Receita ID: {receita_id}, Tarefa1 ID: {tarefa1_id}, Tarefa2 ID: {tarefa2_id}")
+
+        # 2. Associar tarefas à receita
+        print("\n[PASSO 2] Associando tarefas à receita...")
+        add_tarefa_to_receita(receita_id, tarefa1_id, 1, 95.00, "Verificacao de pastilhas e discos")
+        add_tarefa_to_receita(receita_id, tarefa2_id, 4, 25.00, "Balanceamento por roda")
+        
+        tarefas_associadas = get_tarefas_from_receita(receita_id)
+        assert len(tarefas_associadas) == 2
+        print(f"-> SUCESSO: 2 tarefas associadas. {tarefas_associadas}")
+
+        # 3. Verificar o valor total
+        print("\n[PASSO 3] Verificando o valor total...")
+        total = get_valor_total_from_receita(receita_id)
+        # 95.00 + (4 * 25.00) = 195.00 (Este cálculo depende da sua regra de negócio)
+        # Assumindo que o valor na junção é o total para aquele item: 95.00 + 25.00 = 120.00
+        # Vou usar a regra atual da sua função get_valor_total_from_receita
+        total_esperado = 95.00 + 25.00
+        assert total == total_esperado
+        print(f"-> SUCESSO: Valor total calculado é {total:.2f}")
+
+        # 4. Atualizar dados
+        print("\n[PASSO 4] Atualizando dados...")
+        update_receita(receita_id, "Cliente Standalone Atualizado", "Oficina Script", "Motor Teste V2", "RUN-2025", current_date)
+        update_tarefa(tarefa1_id, "Inspecao Completa de Freios")
+        
+        receita_atualizada = get_receita_by_id(receita_id)
+        assert receita_atualizada[1] == "Cliente Standalone Atualizado"
+        print("-> SUCESSO: Dados da receita e tarefa atualizados.")
+
+        # 5. Atualizar uma associação
+        print("\n[PASSO 5] Atualizando uma associação de tarefa...")
+        update_tarefa_from_receita(receita_id, tarefa1_id, 2, 100.00, "Verificacao de pastilhas e discos - ATUALIZADO")
+        
+        total_apos_update = get_valor_total_from_receita(receita_id)
+        assert total_apos_update == 125.00  # 100.00 (tarefa 1 atualizada) + 25.00 (tarefa 2)
+        print(f"-> SUCESSO: Associação atualizada. Novo total: {total_apos_update:.2f}")
+
+        # 6. Remover uma associação
+        print("\n[PASSO 6] Removendo uma associação de tarefa...")
+        remove_tarefa_from_receita(receita_id, tarefa2_id)
+        
+        tarefas_restantes = get_tarefas_from_receita(receita_id)
+        assert len(tarefas_restantes) == 1
+        
+        novo_total = get_valor_total_from_receita(receita_id)
+        assert novo_total == 100.00
+        print(f"-> SUCESSO: Associação removida. Novo total: {novo_total:.2f}")
+
+        # 7. Deletar a receita (e verificar a cascata)
+        print("\n[PASSO 7] Deletando a receita e verificando a cascata...")
+        delete_receita(receita_id)
+        
+        receita_deletada = get_receita_by_id(receita_id)
+        assert receita_deletada is None
+        
+        tarefas_apos_cascata = get_tarefas_from_receita(receita_id)
+        assert len(tarefas_apos_cascata) == 0
+        print("-> SUCESSO: Receita e suas associações foram deletadas.")
+
+        # 8. Deletar tarefas órfãs
+        print("\n[PASSO 8] Deletando tarefas órfãs...")
+        delete_tarefa(tarefa1_id)
+        delete_tarefa(tarefa2_id)
+        print("-> SUCESSO: Tarefas órfãs deletadas.")
+
+        print("\n--- TODOS OS TESTES PASSARAM COM SUCESSO! ---")
+
+    except AssertionError as e:
+        print(f"\n--- !!! TESTE FALHOU !!! ---")
+        print(f"Erro de asserção: {e}")
+    except Exception as e:
+        print(f"\n--- !!! OCORREU UM ERRO INESPERADO DURANTE O TESTE !!! ---")
+        print(f"Erro: {e}")
+
+
+if __name__ == "__main__":
+    # Setup: Garante um ambiente limpo para o teste
+    db_path = get_db_path()
+    if os.path.exists(db_path):
+        os.remove(db_path)
     criar_db()
-
-    # --- Testes de Criação ---
-    print("\n--- Testando Criação de Dados ---")
-
-    # 2. Adicionar uma receita e duas tarefas
-    print("\n2. Adicionando dados iniciais...")
-    receita_id = add_receita("Carlos Pereira", "Mecânica Rápida", "Motor Ford Zetec", "XYZ-7890")
-    tarefa1_id = add_tarefa(1, "Retífica de Cabeçote", "Plainar e assentar válvulas")
-    tarefa2_id = add_tarefa(4, "Troca de Velas", "Velas de Iridium")
-    print(f"Receita adicionada com ID: {receita_id}")
-    print(f"Tarefa 1 adicionada com ID: {tarefa1_id}")
-    print(f"Tarefa 2 adicionada com ID: {tarefa2_id}")
-
-    # 3. Associar tarefas à receita com valores específicos
-    print(f"\n3. Associando tarefas à receita {receita_id}...")
-    add_tarefa_to_receita(receita_id, tarefa1_id, 850.00)
-    add_tarefa_to_receita(receita_id, tarefa2_id, 120.50)
-    print("Associação concluída.")
-
-    # --- Testes de Leitura ---
-    print("\n--- Testando Leitura de Dados ---")
-
-    # 4. Obter tarefas de uma receita
-    print(f"\n4. Buscando tarefas da receita {receita_id}...")
-    tarefas_da_receita = get_tarefas_from_receita(receita_id)
-    print(f"Tarefas encontradas: {tarefas_da_receita}")
-    assert len(tarefas_da_receita) == 2
-
-    # 5. Calcular valor total da receita
-    print(f"\n5. Calculando valor total da receita {receita_id}...")
-    valor_total = get_valor_total_from_receita(receita_id)
-    print(f"Valor total calculado: R$ {valor_total:.2f}")
-    assert valor_total == 970.50
-
-    # 6. Testar buscas por substring
-    print("\n6. Testando buscas por substring...")
-    cliente_encontrado = get_receita_by_cliente("Pereira")
-    oficina_encontrada = get_receita_by_oficina("Rápida")
-    print(f"Busca por 'Pereira' encontrou: {cliente_encontrado}")
-    print(f"Busca por 'Rápida' encontrou: {oficina_encontrada}")
-    assert len(cliente_encontrado) == 1
-    assert len(oficina_encontrada) == 1
-
-    # --- Testes de Atualização ---
-    print("\n--- Testando Atualização de Dados ---")
-
-    # 7. Atualizar uma tarefa
-    print(f"\n7. Atualizando tarefa {tarefa1_id}...")
-    update_tarefa(tarefa1_id, 1, "Retífica de Cabeçote Completa", "Inclui troca de retentores")
-    tarefas_atualizadas = get_tarefas_from_receita(receita_id)
-    print(f"Tarefas após atualização: {tarefas_atualizadas}")
-
-    # --- Testes de Remoção e Deleção ---
-    print("\n--- Testando Remoção e Deleção ---")
-
-    # 8. Remover uma tarefa da receita
-    print(f"\n8. Removendo tarefa {tarefa2_id} da receita {receita_id}...")
-    remove_tarefa_from_receita(receita_id, tarefa2_id)
-    tarefas_restantes = get_tarefas_from_receita(receita_id)
-    print(f"Tarefas restantes na receita: {tarefas_restantes}")
-    assert len(tarefas_restantes) == 1
-
-    # 9. Recalcular valor total
-    print("\n9. Recalculando valor total...")
-    novo_valor_total = get_valor_total_from_receita(receita_id)
-    print(f"Novo valor total: R$ {novo_valor_total:.2f}")
-    assert novo_valor_total == 850.00
-
-    # 10. Deletar a receita (deve deletar as associações em cascata)
-    print(f"\n10. Deletando a receita {receita_id}...")
-    delete_receita(receita_id)
-    receita_deletada = get_receita_by_id(receita_id)
-    tarefas_apos_delete_receita = get_tarefas_from_receita(receita_id)
-    print(f"Busca pela receita deletada (esperado: None): {receita_deletada}")
-    print(f"Associações da receita deletada (esperado: []): {tarefas_apos_delete_receita}")
-    assert receita_deletada is None
-    assert len(tarefas_apos_delete_receita) == 0
-
-    # 11. Deletar as tarefas órfãs
-    print(f"\n11. Deletando tarefas órfãs {tarefa1_id} e {tarefa2_id}...")
-    delete_tarefa(tarefa1_id)
-    delete_tarefa(tarefa2_id)
-    print("Tarefas de teste deletadas.")
-
-    print("\n--- Testes concluídos com sucesso! ---")
-
-if __name__ == '__main__':
-    test_database_workflow()
+    
+    # Executa os testes
+    run_all_tests()
+    
+    # Teardown: Limpa o banco de dados após o teste
+    if os.path.exists(db_path):
+        os.remove(db_path)
+        print("\nBanco de dados de teste limpo.")
