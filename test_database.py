@@ -25,7 +25,7 @@ from database.receita_tarefa import (
     get_valor_total_from_receita
 )
 
-def run_all_tests():
+def test_workflow():
     """
     Executa um teste de fluxo completo para o banco de dados.
     """
@@ -126,7 +126,7 @@ if __name__ == "__main__":
     criar_db()
     
     # Executa os testes
-    run_all_tests()
+    test_workflow()
     
     # Teardown: Limpa o banco de dados após o teste
     if os.path.exists(db_path):
