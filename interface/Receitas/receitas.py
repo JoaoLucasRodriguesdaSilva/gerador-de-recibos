@@ -8,7 +8,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
 from database.receitas import add_receita, get_all_receitas, delete_receita
-from interface.utils.form_entry import FormEntry
+from interface.Receitas.popup.PopupReceita import PopupReceita
 
 class ReceitasFrame(ttk.Frame):
     def __init__(self, parent):
@@ -98,48 +98,4 @@ class ReceitasFrame(ttk.Frame):
                 messagebox.showerror("Erro de Banco de Dados", f"Não foi possível deletar a receita: {e}")
 
     def show_add_receita_popup(self):
-        # Inicia o popup
-        popup = tk.Toplevel(self)
-        popup.title("Adicionar Receita")
-
-        popup_frame = ttk.Frame(popup, padding=10)
-        popup_frame.pack(fill="both", expand=True)
-
-        # Campos para adicionar receita
-        cliente_entry = FormEntry(popup_frame, "Cliente:")
-        cliente_entry.frame.grid(row=0, column=0, sticky="ew", pady=(0, 5))
-
-        oficina_entry = FormEntry(popup_frame, "Oficina:")
-        oficina_entry.frame.grid(row=1, column=0, sticky="ew", pady=(0, 5))
-
-        motor_entry = FormEntry(popup_frame, "Motor/Cabeçote:")
-        motor_entry.frame.grid(row=2, column=0, sticky="ew", pady=(0, 5))
-
-        placa_entry = FormEntry(popup_frame, "Placa:")
-        placa_entry.frame.grid(row=3, column=0, sticky="ew", pady=(0, 5))
-
-        data_entry = FormEntry(popup_frame, "Data:", datetime.now().strftime("%d/%m/%Y"))
-        data_entry.frame.grid(row=4, column=0, sticky="ew", pady=(0, 5))
-
-        save_command = lambda: self.save_receita(popup, cliente_entry, oficina_entry, motor_entry, placa_entry, data_entry)
-
-        button_frame = ttk.Frame(popup_frame)
-        button_frame.grid(row=5, column=0, columnspan=2, pady=10)
-
-        SaveButton = ttk.Button(button_frame, text="Salvar", command=save_command)
-        SaveButton.pack(side="left", padx=5)
-
-        CancelButton = ttk.Button(button_frame, text="Cancelar", command=popup.destroy)
-        CancelButton.pack(side="left")
-
-        # Centraliza o popup na tela
-        popup.update_idletasks()
-        screen_width = self.winfo_screenwidth()
-        screen_height = self.winfo_screenheight()
-        popup_width = popup.winfo_width()
-        popup_height = popup.winfo_height()
-        x = (screen_width // 2) - (popup_width // 2)
-        y = (screen_height // 2) - (popup_height // 2)
-        popup.geometry(f"{popup_width}x{popup_height}+{x}+{y}")
-
-        popup.grab_set()
+        PopupReceita(self)
