@@ -38,7 +38,7 @@ class PopupReceita:
 
         # Frame que contém os botões
         button_frame = ttk.Frame(popup_frame)
-        button_frame.grid(row=5, column=0, pady=10, sticky="e")
+        button_frame.grid(row=5, column=0, pady=10, sticky="ew")
 
         # Botões de salvar e cancelar
         SaveButton = ttk.Button(button_frame, text="Salvar", command=self.on_save)
