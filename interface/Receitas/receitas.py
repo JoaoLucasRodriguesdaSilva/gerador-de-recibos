@@ -24,8 +24,8 @@ class ReceitasFrame(ttk.Frame):
 
         # --- Botões de Ação ---
         button_frame = ttk.Frame(management_frame)
-        button_frame.grid(row=3, column=0, columnspan=4, pady=10)
-        ttk.Button(button_frame, text="Nova Receita", command=self.show_add_receita_popup).pack(side="left", padx=5)
+        button_frame.pack(pady=5, padx=5, anchor="w")
+        ttk.Button(button_frame, text="Nova Receita", command=self.show_add_receita_popup).pack(side="left")
 
         # --- Frame da Lista de Receitas ---
         list_frame = ttk.LabelFrame(self, text="Receitas Cadastradas")
@@ -64,24 +64,24 @@ class ReceitasFrame(ttk.Frame):
         for receita in get_all_receitas():
             self.tree.insert("", "end", values=receita)
 
-    def save_receita(self, popup, cliente_entry, oficina_entry, motor_entry, placa_entry, data_entry):
+    def save_receita(self, data, popup):
+        """Lógica para salvar a receita, chamada pelo popup."""
+        cliente = data["cliente"]
+        oficina = data["oficina"]
+        motor = data["motor"]
+        placa = data["placa"]
+        data_str = data["data"]
 
-        cliente = cliente_entry.get_entry_value()
-        oficina = oficina_entry.get_entry_value()
-        motor = motor_entry.get_entry_value()
-        placa = placa_entry.get_entry_value()
-        data = data_entry.get_entry_value()
-
-        if not all([cliente, oficina, motor, placa, data]):
-            messagebox.showwarning("Campo Vazio", "Todos os campos devem ser preenchidos.")
+        if not all([cliente, oficina, motor, placa, data_str]):
+            messagebox.showwarning("Campo Vazio", "Todos os campos devem ser preenchidos.", parent=popup)
             return
             
         try:
-            add_receita(cliente, oficina, motor, placa, data)
+            add_receita(cliente, oficina, motor, placa, data_str)
             self.populate_receitas_list()
-            popup.destroy()
+            popup.destroy() # Fecha o popup após o sucesso
         except Exception as e:
-            messagebox.showerror("Erro de Banco de Dados", f"Não foi possível salvar a receita: {e}")
+            messagebox.showerror("Erro de Banco de Dados", f"Não foi possível salvar a receita: {e}", parent=popup)
 
     def delete_selected_receita(self):
         selected_item = self.tree.selection()
@@ -98,4 +98,5 @@ class ReceitasFrame(ttk.Frame):
                 messagebox.showerror("Erro de Banco de Dados", f"Não foi possível deletar a receita: {e}")
 
     def show_add_receita_popup(self):
-        PopupReceita(self)
+        """Cria o popup e passa a função de salvar como callback."""
+        PopupReceita(self, self.save_receita)
