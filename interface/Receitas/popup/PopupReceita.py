@@ -13,9 +13,12 @@ class PopupReceita:
     def __init__(self, parent):
         self.parent = parent
 
+        # Gerar popup
         self.popup = tk.Toplevel(parent)
         self.popup.title("Adicionar Receita")
+        self.popup.transient(parent)
 
+        # Frame principal do popup
         popup_frame = ttk.Frame(self.popup, padding=10)
         popup_frame.pack(fill="both", expand=True)
 
@@ -35,47 +38,52 @@ class PopupReceita:
         data_entry = FormEntry(popup_frame, "Data:", datetime.now().strftime("%d/%m/%Y"))
         data_entry.frame.grid(row=4, column=0, sticky="ew", pady=(0, 5))
 
+        # Comando para inserir no botão "Salvar"
         save_command = lambda: self.save_receita(cliente_entry, oficina_entry, motor_entry, placa_entry, data_entry)
 
+        # Frame que contém os botões
         button_frame = ttk.Frame(popup_frame)
-        button_frame.grid(row=5, column=0, columnspan=2, pady=10)
+        button_frame.grid(row=5, column=0, columnspan=2, pady=10, sticky="e")
 
+        # Botões de salvar e cancelar
         SaveButton = ttk.Button(button_frame, text="Salvar", command=save_command)
         SaveButton.pack(side="left", padx=5)
 
         CancelButton = ttk.Button(button_frame, text="Cancelar", command=self.destroy)
         CancelButton.pack(side="left")
 
-        # Centraliza o popup na tela
+        # Centraliza o popup na janela pai
         self.popup.update_idletasks()
-        screen_width = parent.winfo_screenwidth()
-        screen_height = parent.winfo_screenheight()
+        parent_x = self.parent.winfo_x()
+        parent_y = self.parent.winfo_y()
+        parent_width = self.parent.winfo_width()
+        parent_height = self.parent.winfo_height()
         popup_width = self.popup.winfo_width()
         popup_height = self.popup.winfo_height()
-        x = (screen_width // 2) - (popup_width // 2)
-        y = (screen_height // 2) - (popup_height // 2)
-        self.popup.geometry(f"{popup_width}x{popup_height}+{x}+{y}")
+        x = parent_x + (parent_width // 2) - (popup_width // 2)
+        y = parent_y + (parent_height // 2) - (popup_height // 2)
+        self.popup.geometry(f'+{x}+{y}')
 
         self.popup.grab_set()
 
     def save_receita(self, cliente_entry, oficina_entry, motor_entry, placa_entry, data_entry):
+        """Salva receita no banco de dados e fecha popup"""
+        cliente = cliente_entry.get_entry_value()
+        oficina = oficina_entry.get_entry_value()
+        motor = motor_entry.get_entry_value()
+        placa = placa_entry.get_entry_value()
+        data = data_entry.get_entry_value()
 
-            cliente = cliente_entry.get_entry_value()
-            oficina = oficina_entry.get_entry_value()
-            motor = motor_entry.get_entry_value()
-            placa = placa_entry.get_entry_value()
-            data = data_entry.get_entry_value()
-
-            if not all([cliente, oficina, motor, placa, data]):
-                messagebox.showwarning("Campo Vazio", "Todos os campos devem ser preenchidos.")
-                return
-                
-            try:
-                add_receita(cliente, oficina, motor, placa, data)
-                self.populate_receitas_list()
-                self.destroy()
-            except Exception as e:
-                messagebox.showerror("Erro de Banco de Dados", f"Não foi possível salvar a receita: {e}")
+        if not all([cliente, oficina, motor, placa, data]):
+            messagebox.showwarning("Campo Vazio", "Todos os campos devem ser preenchidos.")
+            return
+            
+        try:
+            add_receita(cliente, oficina, motor, placa, data)
+            self.populate_receitas_list()
+            self.destroy()
+        except Exception as e:
+            messagebox.showerror("Erro de Banco de Dados", f"Não foi possível salvar a receita: {e}")
     
     def populate_receitas_list(self):
         for item in self.parent.tree.get_children():
@@ -84,5 +92,6 @@ class PopupReceita:
             self.parent.tree.insert("", "end", values=receita)
 
     def destroy(self):
+        """Fecha o popup e limpa a referência"""
         self.popup.destroy()
         self = None
