@@ -110,16 +110,16 @@ class ReceitasFrame(ttk.Frame):
         cliente_entry.frame.grid(row=0, column=0, sticky="ew", pady=(0, 5))
 
         oficina_entry = FormEntry(popup_frame, "Oficina:")
-        oficina_entry.frame.grid(row=1, column=0, sticky="ew")
+        oficina_entry.frame.grid(row=1, column=0, sticky="ew", pady=(0, 5))
 
         motor_entry = FormEntry(popup_frame, "Motor/Cabeçote:")
-        motor_entry.frame.grid(row=2, column=0, sticky="ew")
+        motor_entry.frame.grid(row=2, column=0, sticky="ew", pady=(0, 5))
 
         placa_entry = FormEntry(popup_frame, "Placa:")
-        placa_entry.frame.grid(row=3, column=0, sticky="ew")
+        placa_entry.frame.grid(row=3, column=0, sticky="ew", pady=(0, 5))
 
         data_entry = FormEntry(popup_frame, "Data:", datetime.now().strftime("%d/%m/%Y"))
-        data_entry.frame.grid(row=4, column=0, sticky="ew")
+        data_entry.frame.grid(row=4, column=0, sticky="ew", pady=(0, 5))
 
         save_command = lambda: self.save_receita(popup, cliente_entry, oficina_entry, motor_entry, placa_entry, data_entry)
 
