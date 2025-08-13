@@ -6,7 +6,7 @@ class FormEntry:
         self.label = ttk.Label(self.frame, text=label_text)
         self.entry = ttk.Entry(self.frame, width=width)
         self.entry.insert(0, placeholder)
-        self.label.grid(row=0, column=0, padx=5, pady=5)
+        self.label.grid(row=0, column=0, padx=5, sticky="w")
         self.entry.grid(row=1, column=0, padx=5, pady=5)
 
     def get_entry_value(self):
