@@ -1,12 +1,8 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
-import datetime
-import os
-import sys
+from tkinter import ttk
+from datetime import datetime
+from interface.utils.form_entry import FormEntry
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
-
-from database.receitas import add_receita, get_all_receitas
 from interface.utils.form_entry import FormEntry
 
 class PopupReceita:
@@ -75,9 +71,3 @@ class PopupReceita:
             "data": self.data_entry.get_entry_value()
         }
         self.save_callback(data, self.popup)
-    
-    def populate_receitas_list(self):
-        for item in self.parent.tree.get_children():
-            self.parent.tree.delete(item)
-        for receita in get_all_receitas():
-            self.parent.tree.insert("", "end", values=receita)
