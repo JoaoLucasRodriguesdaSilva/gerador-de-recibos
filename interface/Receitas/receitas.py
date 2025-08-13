@@ -1,3 +1,4 @@
+import tkinter as tk
 from tkinter import ttk, messagebox
 from datetime import datetime
 import sys
@@ -7,6 +8,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
 from database.receitas import add_receita, get_all_receitas, delete_receita
+from interface.utils.form_entry import FormEntry
 
 class ReceitasFrame(ttk.Frame):
     def __init__(self, parent):
@@ -19,34 +21,11 @@ class ReceitasFrame(ttk.Frame):
         # --- Frame de Gerenciamento ---
         management_frame = ttk.LabelFrame(self, text="Gerenciar Receita")
         management_frame.pack(fill="x", padx=5, pady=5)
-        
-        # --- Entradas de Dados ---
-        ttk.Label(management_frame, text="Cliente:").grid(row=0, column=0, padx=5, pady=5, sticky="w")
-        self.cliente_entry = ttk.Entry(management_frame, width=40)
-        self.cliente_entry.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
-        
-        ttk.Label(management_frame, text="Oficina:").grid(row=0, column=2, padx=5, pady=5, sticky="w")
-        self.oficina_entry = ttk.Entry(management_frame, width=40)
-        self.oficina_entry.grid(row=0, column=3, padx=5, pady=5, sticky="ew")
-        
-        ttk.Label(management_frame, text="Motor/Cabeçote:").grid(row=1, column=0, padx=5, pady=5, sticky="w")
-        self.motor_entry = ttk.Entry(management_frame, width=40)
-        self.motor_entry.grid(row=1, column=1, padx=5, pady=5, sticky="ew")
-        
-        ttk.Label(management_frame, text="Placa:").grid(row=1, column=2, padx=5, pady=5, sticky="w")
-        self.placa_entry = ttk.Entry(management_frame, width=40)
-        self.placa_entry.grid(row=1, column=3, padx=5, pady=5, sticky="ew")
-
-        ttk.Label(management_frame, text="Data:").grid(row=2, column=0, padx=5, pady=5, sticky="w")
-        self.data_entry = ttk.Entry(management_frame, width=40)
-        self.data_entry.grid(row=2, column=1, padx=5, pady=5, sticky="ew")
-        self.data_entry.insert(0, datetime.now().strftime("%Y/%m/%d"))
 
         # --- Botões de Ação ---
         button_frame = ttk.Frame(management_frame)
         button_frame.grid(row=3, column=0, columnspan=4, pady=10)
-        ttk.Button(button_frame, text="Salvar Receita", command=self.save_receita).pack(side="left", padx=5)
-        ttk.Button(button_frame, text="Limpar Formulário", command=self.clear_form).pack(side="left", padx=5)
+        ttk.Button(button_frame, text="Nova Receita", command=self.show_add_receita_popup).pack(side="left", padx=5)
 
         # --- Frame da Lista de Receitas ---
         list_frame = ttk.LabelFrame(self, text="Receitas Cadastradas")
@@ -85,21 +64,22 @@ class ReceitasFrame(ttk.Frame):
         for receita in get_all_receitas():
             self.tree.insert("", "end", values=receita)
 
-    def save_receita(self):
-        cliente = self.cliente_entry.get()
-        oficina = self.oficina_entry.get()
-        motor = self.motor_entry.get()
-        placa = self.placa_entry.get()
-        data = self.data_entry.get()
-        
+    def save_receita(self, popup, cliente_entry, oficina_entry, motor_entry, placa_entry, data_entry):
+
+        cliente = cliente_entry.get_entry_value()
+        oficina = oficina_entry.get_entry_value()
+        motor = motor_entry.get_entry_value()
+        placa = placa_entry.get_entry_value()
+        data = data_entry.get_entry_value()
+
         if not all([cliente, oficina, motor, placa, data]):
             messagebox.showwarning("Campo Vazio", "Todos os campos devem ser preenchidos.")
             return
             
         try:
             add_receita(cliente, oficina, motor, placa, data)
-            self.clear_form()
             self.populate_receitas_list()
+            popup.destroy()
         except Exception as e:
             messagebox.showerror("Erro de Banco de Dados", f"Não foi possível salvar a receita: {e}")
 
@@ -117,10 +97,49 @@ class ReceitasFrame(ttk.Frame):
             except Exception as e:
                 messagebox.showerror("Erro de Banco de Dados", f"Não foi possível deletar a receita: {e}")
 
-    def clear_form(self):
-        self.cliente_entry.delete(0, "end")
-        self.oficina_entry.delete(0, "end")
-        self.motor_entry.delete(0, "end")
-        self.placa_entry.delete(0, "end")
-        self.data_entry.delete(0, "end")
-        self.data_entry.insert(0, datetime.now().strftime("%Y/%m/%d"))
+    def show_add_receita_popup(self):
+        # Inicia o popup
+        popup = tk.Toplevel(self)
+        popup.title("Adicionar Receita")
+
+        popup_frame = ttk.Frame(popup, padding=10)
+        popup_frame.pack(fill="both", expand=True)
+
+        # Campos para adicionar receita
+        cliente_entry = FormEntry(popup_frame, "Cliente:")
+        cliente_entry.frame.grid(row=0, column=0, sticky="ew")
+
+        oficina_entry = FormEntry(popup_frame, "Oficina:")
+        oficina_entry.frame.grid(row=1, column=0, sticky="ew")
+
+        motor_entry = FormEntry(popup_frame, "Motor/Cabeçote:")
+        motor_entry.frame.grid(row=2, column=0, sticky="ew")
+
+        placa_entry = FormEntry(popup_frame, "Placa:")
+        placa_entry.frame.grid(row=3, column=0, sticky="ew")
+        
+        data_entry = FormEntry(popup_frame, "Data:", datetime.now().strftime("%d/%m/%Y"))
+        data_entry.frame.grid(row=4, column=0, sticky="ew")
+
+        save_command = lambda: self.save_receita(popup, cliente_entry, oficina_entry, motor_entry, placa_entry, data_entry)
+
+        button_frame = ttk.Frame(popup_frame)
+        button_frame.grid(row=5, column=0, columnspan=2, pady=10)
+
+        SaveButton = ttk.Button(button_frame, text="Salvar", command=save_command)
+        SaveButton.pack(side="left", padx=5)
+
+        CancelButton = ttk.Button(button_frame, text="Cancelar", command=popup.destroy)
+        CancelButton.pack(side="left")
+
+        # Centraliza o popup na tela
+        popup.update_idletasks()
+        screen_width = self.winfo_screenwidth()
+        screen_height = self.winfo_screenheight()
+        popup_width = popup.winfo_width()
+        popup_height = popup.winfo_height()
+        x = (screen_width // 2) - (popup_width // 2)
+        y = (screen_height // 2) - (popup_height // 2)
+        popup.geometry(f"{popup_width}x{popup_height}+{x}+{y}")
+
+        popup.grab_set()
