@@ -107,7 +107,7 @@ class ReceitasFrame(ttk.Frame):
 
         # Campos para adicionar receita
         cliente_entry = FormEntry(popup_frame, "Cliente:")
-        cliente_entry.frame.grid(row=0, column=0, sticky="ew")
+        cliente_entry.frame.grid(row=0, column=0, sticky="ew", pady=5)
 
         oficina_entry = FormEntry(popup_frame, "Oficina:")
         oficina_entry.frame.grid(row=1, column=0, sticky="ew")
@@ -117,7 +117,7 @@ class ReceitasFrame(ttk.Frame):
 
         placa_entry = FormEntry(popup_frame, "Placa:")
         placa_entry.frame.grid(row=3, column=0, sticky="ew")
-        
+
         data_entry = FormEntry(popup_frame, "Data:", datetime.now().strftime("%d/%m/%Y"))
         data_entry.frame.grid(row=4, column=0, sticky="ew")
 
