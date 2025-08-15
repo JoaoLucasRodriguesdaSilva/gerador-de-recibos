@@ -1,5 +1,5 @@
+from tarefas.popup.PopupTarefa import PopupTarefa
 from tkinter import ttk, messagebox
-from popup.PopupTarefa import PopupTarefa
 import sys
 import os
 
