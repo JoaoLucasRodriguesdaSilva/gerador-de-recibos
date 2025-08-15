@@ -23,7 +23,7 @@ class TarefasFrame(ttk.Frame):
         # --- Botões de Ação ---
         button_frame = ttk.Frame(management_frame)
         button_frame.pack(pady=5, padx=5, anchor="w")
-        ttk.Button(button_frame, text="Nova Tarefa", command=self.add_tarefa_entry).pack(side="left")
+        ttk.Button(button_frame, text="Nova Tarefa", command=self.show_add_tarefa_popup).pack(side="left")
         ttk.Button(button_frame, text="Voltar para Receitas", command=show_receitas_callback).pack(side="left", padx=(5, 0))
 
         # --- Frame da Lista de Tarefas ---
@@ -34,7 +34,7 @@ class TarefasFrame(ttk.Frame):
         self.tree = ttk.Treeview(list_frame, columns=columns, show="headings")
         
         self.tree.heading("id", text="ID")
-        self.tree.heading("cliente", text="Nome")
+        self.tree.heading("nome", text="Nome")
         
         self.tree.column("id", width=50, anchor="center")
         self.tree.column("nome", width=200)
