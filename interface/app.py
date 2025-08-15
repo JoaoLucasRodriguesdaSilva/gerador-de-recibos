@@ -1,8 +1,9 @@
+from receitas.Receitas import ReceitasFrame
+from tarefas.Tarefas import TarefasFrame
+from tkinter import ttk
+import tkinter as tk
 import sys
 import os
-import tkinter as tk
-from tkinter import ttk
-from Receitas.receitas import ReceitasFrame
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from database.criar_bd import create_table
@@ -30,8 +31,14 @@ class Main:
     def show_receitas(self):
         """Mostra página das receitas"""
         self._clear_container()
-        self.receitas_frame = ReceitasFrame(self.main_frame)
+        self.receitas_frame = ReceitasFrame(self.main_frame, self.show_tarefas)
         self.receitas_frame.pack(fill="both", expand=True)
+    
+    def show_tarefas(self):
+        """Mostrar página das tarefas"""
+        self._clear_container()
+        self.tarefas_frame = TarefasFrame(self.main_frame, self.show_receitas)
+        self.tarefas_frame.pack(fill="both", expand=True)
 
 root = tk.Tk()
 app = Main(root)

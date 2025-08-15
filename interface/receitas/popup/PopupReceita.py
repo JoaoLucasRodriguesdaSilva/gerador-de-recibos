@@ -1,9 +1,7 @@
-import tkinter as tk
-from tkinter import ttk
+from interface.utils.form_entry import FormEntry
 from datetime import datetime
-from interface.utils.form_entry import FormEntry
-
-from interface.utils.form_entry import FormEntry
+from tkinter import ttk
+import tkinter as tk
 
 class PopupReceita:
     def __init__(self, parent, save_callback):
