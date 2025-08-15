@@ -1,5 +1,5 @@
-from receitas.Receitas import ReceitasFrame
-from tarefas.Tarefas import TarefasFrame
+from interface.receitas.Receitas import ReceitasFrame
+from interface.tarefas.Tarefas import TarefasFrame
 from tkinter import ttk
 import tkinter as tk
 import sys

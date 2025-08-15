@@ -5,7 +5,7 @@ import sys
 import os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
-from utils.form_entry import FormEntry
+from interface.utils.form_entry import FormEntry
 
 class PopupReceita:
     def __init__(self, parent, save_callback):
