@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from interface.utils.form_entry import FormEntry
 
-class PopupReceita:
+class AdicionarTarefa:
     def __init__(self, parent, save_callback):
         self.parent = parent
         self.save_callback = save_callback
