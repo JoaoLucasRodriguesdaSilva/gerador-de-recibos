@@ -3,8 +3,9 @@ from tkinter import ttk
 from interface.utils.form_entry import FormEntry
 
 class AdicionarTarefa:
-    def __init__(self, parent):
+    def __init__(self, parent, save_callback):
         self.parent = parent
+        self.save_callback = save_callback
 
         # Gerar popup
         self.popup = tk.Toplevel(parent)
@@ -22,7 +23,7 @@ class AdicionarTarefa:
 
         # Frame que contém os botões
         button_frame = ttk.Frame(popup_frame)
-        button_frame.grid(row=5, column=0, pady=10)
+        button_frame.grid(row=1, column=0, pady=10)
 
         # Botões de salvar e cancelar
         SaveButton = ttk.Button(button_frame, text="Salvar", command=self.on_save)
