@@ -1,4 +1,4 @@
-from interface.receitas.popup.PopupReceita import PopupReceita
+from receitas.popup.PopupReceita import PopupReceita
 from tkinter import ttk, messagebox
 import sys
 import os

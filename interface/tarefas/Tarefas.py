@@ -1,4 +1,4 @@
-from interface.tarefas.popup.PopupTarefa import PopupTarefa
+from tarefas.popup.PopupTarefa import PopupTarefa
 from tkinter import ttk, messagebox
 import sys
 import os
