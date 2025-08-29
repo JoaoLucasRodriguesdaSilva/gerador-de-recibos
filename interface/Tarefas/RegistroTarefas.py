@@ -47,7 +47,7 @@ class RegistroTarefas:
         button_frame = ttk.Frame(popup_frame)
         button_frame.pack(fill="x", padx=5, pady=(0, 5))
 
-        ttk.Button(button_frame, text="Adicionar Tarefa", command=self.add_tarefa).pack(side="left")
+        ttk.Button(button_frame, text="Adicionar Tarefa", command=self.show_add_tarefa_popup).pack(side="left")
         ttk.Button(button_frame, text="Deletar Tarefa", command=self.delete_selected_tarefa).pack(side="left")
 
         # Centraliza o popup na janela pai
