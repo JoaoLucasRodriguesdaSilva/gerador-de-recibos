@@ -88,7 +88,7 @@ class RegistroTarefas:
     
     def show_add_tarefa_popup(self):
         """Cria o popup e passa a função de salvar como callback."""
-        AdicionarTarefa(self, self.save_tarefa)
+        AdicionarTarefa(self.popup, self.save_tarefa)
 
     def delete_selected_tarefa(self):
         selected_item = self.tree.selection()
