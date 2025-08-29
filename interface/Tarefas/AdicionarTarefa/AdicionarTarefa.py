@@ -3,9 +3,8 @@ from tkinter import ttk
 from interface.utils.form_entry import FormEntry
 
 class AdicionarTarefa:
-    def __init__(self, parent, save_callback):
+    def __init__(self, parent):
         self.parent = parent
-        self.save_callback = save_callback
 
         # Gerar popup
         self.popup = tk.Toplevel(parent)
