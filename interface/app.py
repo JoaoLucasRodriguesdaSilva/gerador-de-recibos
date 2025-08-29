@@ -7,32 +7,26 @@ from Receitas.receitas import ReceitasFrame
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from database.criar_bd import create_table
 
-class Main:
-    def __init__(self, root):
-        create_table()
+create_table()
 
-        # --- Main Application Window ---
-        self.root = root
-        self.root.title("Gerenciador de Receitas")
-        self.root.geometry("1024x600") # Set a default size
-
-        # --- Frame Principal ---
-        self.main_frame = ttk.Frame(self.root, padding=10)
-        self.main_frame.pack(fill="both", expand=True)
-
-        self.show_receitas()
-
-    def _clear_container(self):
-        """Destrói todos os widgets filhos do frame principal"""
-        for widget in self.main_frame.winfo_children():
-            widget.destroy()
-
-    def show_receitas(self):
-        """Mostra página das receitas"""
-        self._clear_container()
-        self.receitas_frame = ReceitasFrame(self.main_frame)
-        self.receitas_frame.pack(fill="both", expand=True)
-
+# --- Main Application Window ---
 root = tk.Tk()
-app = Main(root)
+root.title("Gerenciador de Receitas")
+root.geometry("1024x600") # Set a default size
+
+# --- Frame Principal ---
+main_frame = ttk.Frame(root, padding=10)
+main_frame.pack(fill="both", expand=True)
+
+# --- Seção Receitas ---
+receitas_frame = ReceitasFrame(main_frame)
+receitas_frame.pack(fill="both", expand=True)
+
+# --- Seção Tarefas ---
+
+
+# --- Seção Tarefas de uma Receita ---
+
+
+# --- Start the application ---
 root.mainloop()
