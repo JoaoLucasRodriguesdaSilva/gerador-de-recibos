@@ -1,6 +1,4 @@
-import tkinter as tk
 from tkinter import ttk, messagebox
-from datetime import datetime
 import sys
 import os
 
@@ -9,6 +7,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')
 
 from database.receitas import add_receita, get_all_receitas, delete_receita
 from interface.Receitas.popup.PopupReceita import PopupReceita
+from interface.Tarefas.RegistroTarefas import RegistroTarefas
 
 class ReceitasFrame(ttk.Frame):
     def __init__(self, parent):
@@ -26,6 +25,7 @@ class ReceitasFrame(ttk.Frame):
         button_frame = ttk.Frame(management_frame)
         button_frame.pack(pady=5, padx=5, anchor="w")
         ttk.Button(button_frame, text="Nova Receita", command=self.show_add_receita_popup).pack(side="left")
+        ttk.Button(button_frame, text="Tarefas Salvas", command=self.show_saved_tarefas_popup).pack(side="left")
 
         # --- Frame da Lista de Receitas ---
         list_frame = ttk.LabelFrame(self, text="Receitas Cadastradas")
@@ -100,3 +100,7 @@ class ReceitasFrame(ttk.Frame):
     def show_add_receita_popup(self):
         """Cria o popup e passa a função de salvar como callback."""
         PopupReceita(self, self.save_receita)
+
+    def show_saved_tarefas_popup(self):
+        """Cria o popup de controle de tarefas."""
+        RegistroTarefas(self)

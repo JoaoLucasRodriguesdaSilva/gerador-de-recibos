@@ -5,7 +5,7 @@ from tkinter import ttk, messagebox
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 from database.tarefas import add_tarefa, get_all_tarefas, delete_tarefa
-from interface.Tarefas.RegistroTarefas.AdicionarTarefa import AdicionarTarefa
+from interface.Tarefas.AdicionarTarefa import AdicionarTarefa
 
 class RegistroTarefas:
     """Popup para registrar, remover e atualizar possíveis tarefas."""
