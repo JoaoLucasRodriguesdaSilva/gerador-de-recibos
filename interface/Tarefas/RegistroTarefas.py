@@ -29,9 +29,6 @@ class RegistroTarefas:
         list_frame = ttk.LabelFrame(popup_frame, text="Tarefas Cadastradas")
         list_frame.pack(fill="both", expand=True, padx=5, pady=5)
 
-        self.tarefas_listbox = tk.Listbox(list_frame)
-        self.tarefas_listbox.pack(fill="both", expand=True)
-
         columns = ("id", "nome")
         self.tree = ttk.Treeview(list_frame, columns=columns, show="headings")
 
