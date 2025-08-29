@@ -24,7 +24,6 @@ class RegistroTarefas:
         # Frame principal do popup
         popup_frame = ttk.Frame(self.popup, padding=10)
         popup_frame.pack(fill="both", expand=True)
-        popup_frame.columnconfigure(0, weight=1)
 
         # Frame mostrando todas as tarefas salvas
         list_frame = ttk.LabelFrame(popup_frame, text="Tarefas Cadastradas")
