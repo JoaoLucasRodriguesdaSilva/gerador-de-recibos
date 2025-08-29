@@ -1,6 +1,5 @@
 import tkinter as tk
 from tkinter import ttk
-from datetime import datetime
 from interface.utils.form_entry import FormEntry
 
 class PopupReceita:
@@ -10,7 +9,7 @@ class PopupReceita:
 
         # Gerar popup
         self.popup = tk.Toplevel(parent)
-        self.popup.title("Adicionar Receita")
+        self.popup.title("Adicionar Tarefa")
         self.popup.transient(parent)
 
         # Frame principal do popup
@@ -18,21 +17,9 @@ class PopupReceita:
         popup_frame.pack(fill="both", expand=True)
         popup_frame.columnconfigure(0, weight=1)
 
-        # Campos para adicionar receita
-        self.cliente_entry = FormEntry(popup_frame, "Cliente:")
-        self.cliente_entry.frame.grid(row=0, column=0, sticky="ew", pady=(0, 5))
-
-        self.oficina_entry = FormEntry(popup_frame, "Oficina:")
-        self.oficina_entry.frame.grid(row=1, column=0, sticky="ew", pady=(0, 5))
-
-        self.motor_entry = FormEntry(popup_frame, "Motor/Cabeçote:")
-        self.motor_entry.frame.grid(row=2, column=0, sticky="ew", pady=(0, 5))
-
-        self.placa_entry = FormEntry(popup_frame, "Placa:")
-        self.placa_entry.frame.grid(row=3, column=0, sticky="ew", pady=(0, 5))
-
-        self.data_entry = FormEntry(popup_frame, "Data:", datetime.now().strftime("%d/%m/%Y"))
-        self.data_entry.frame.grid(row=4, column=0, sticky="ew", pady=(0, 5))
+        # Campo para adicionar tarefa
+        self.nome_entry = FormEntry(popup_frame, "Nome:")
+        self.nome_entry.frame.grid(row=0, column=0, sticky="ew", pady=(0, 5))
 
         # Frame que contém os botões
         button_frame = ttk.Frame(popup_frame)
@@ -62,10 +49,6 @@ class PopupReceita:
     def on_save(self):
         """Coleta os dados e chama a função de callback para salvar."""
         data = {
-            "cliente": self.cliente_entry.get_entry_value(),
-            "oficina": self.oficina_entry.get_entry_value(),
-            "motor": self.motor_entry.get_entry_value(),
-            "placa": self.placa_entry.get_entry_value(),
-            "data": self.data_entry.get_entry_value()
+            "nome": self.nome_entry.get_entry_value(),
         }
         self.save_callback(data, self.popup)
