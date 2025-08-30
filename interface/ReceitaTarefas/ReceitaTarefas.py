@@ -1,4 +1,4 @@
-from tkinter import ttk
+from tkinter import ttk, messagebox
 import sys
 import os
 
@@ -14,6 +14,7 @@ class ReceitasTarefas:
         self.receita = get_receita_by_id(receita_id)
 
         self.create_widgets()
+        self.tarefas_associadas = []
     
     def create_widgets(self):
         # --- Frame de Informações da Receita ---
@@ -60,8 +61,44 @@ class ReceitasTarefas:
         self.entry_observacoes.grid(row=1, column=3, padx=5, pady=2, sticky="w")
 
         self.tarefas_associadas_frame = ttk.LabelFrame(self, text="Tarefas Associadas")
-        self.tarefas_associadas_frame.pack(fill="x", padx=5, pady=5, side="top")
+        self.tarefas_associadas_frame.pack(fill="both", expand=True, padx=5, pady=5)
 
+        self.tree = ttk.Treeview(self.tarefas_associadas_frame, columns=("nome", "quantidade", "valor", "observacoes"), show="headings")
+        self.tree.pack(fill="both", expand=True)
+
+        self.tree.heading("quantidade", text="Quantidade")
+        self.tree.heading("nome", text="Tarefa")
+        self.tree.heading("valor", text="Valor")
+        self.tree.heading("observacoes", text="Observações")
+
+        self.tree.column("quantidade", width=20, anchor="center")
+        self.tree.column("nome", width=150, anchor="w")
+        self.tree.column("valor", width=20, anchor="center")
+        self.tree.column("observacoes", width=100, anchor="w")
+
+        scrollbar = ttk.Scrollbar(self.tarefas_associadas_frame, orient="vertical", command=self.tree.yview)
+        scrollbar.pack(side="right", fill="y")
+        self.tree.configure(yscroll=scrollbar.set)
+
+        self.salvar_button = ttk.Button(self, text="Salvar", command=self.salvar)
+        self.salvar_button.pack(side="bottom", padx=5, pady=5)
+
+        self.remover_button = ttk.Button(self, text="Remover", command=self.remover)
+        self.remover_button.pack(side="bottom", padx=5, pady=5)
+
+    def salvar(self):
+        """Salva as informações da tarefa."""
+        quantidade = self.entry_quantidade.get()
+        tarefa = self.entry_tarefa.get()
+        valor = self.entry_valor.get()
+        observacoes = self.entry_observacoes.get()
+
+        if not all([quantidade, tarefa, valor]):
+            messagebox.showwarning("Campo Vazio", "Campos obrigatórios devem ser preenchidos.", parent=self)
+            return
+
+        self.tarefas_associadas.append([quantidade, tarefa, valor, observacoes])
+        
     def on_tarefa_search(self, event):
         """Filtra a lista de tarefas no combobox com base no que o usuário digita."""
         typed_text = self.entry_tarefa.get()
