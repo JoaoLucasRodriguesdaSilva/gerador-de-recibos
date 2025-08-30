@@ -39,7 +39,7 @@ class PopupReceita:
         button_frame.grid(row=5, column=0, pady=10)
 
         # Botões de salvar e cancelar
-        SaveButton = ttk.Button(button_frame, text="Salvar", command=self.on_save)
+        SaveButton = ttk.Button(button_frame, text="Salvar", command=self.next_step)
         SaveButton.pack(side="left", padx=5)
 
         CancelButton = ttk.Button(button_frame, text="Cancelar", command=self.popup.destroy)
@@ -59,8 +59,8 @@ class PopupReceita:
 
         self.popup.grab_set()
 
-    def on_save(self):
-        """Coleta os dados e chama a função de callback para salvar."""
+    def next_step(self):
+        """Coleta os dados, chama a função de callback para salvar e abre popup para associar tarefas."""
         data = {
             "cliente": self.cliente_entry.get_entry_value(),
             "oficina": self.oficina_entry.get_entry_value(),
