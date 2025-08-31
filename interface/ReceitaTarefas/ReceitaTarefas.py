@@ -155,7 +155,7 @@ class ReceitasTarefas:
             filtered_list = [tarefa for tarefa in self.get_all_tarefa_nomes() if typed_text.lower() in tarefa.lower()]
 
         # Atualiza os valores do combobox com a lista filtrada
-        self.tarefa_combobox['values'] = filtered_list
+        self.entry_tarefa['values'] = filtered_list
 
     def get_all_tarefa_nomes(self):
         tarefas = get_all_tarefas()
