@@ -8,6 +8,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')
 from database.receitas import add_receita, get_all_receitas, delete_receita
 from interface.Receitas.popup.PopupReceita import PopupReceita
 from interface.Tarefas.RegistroTarefas import RegistroTarefas
+from interface.ReceitaTarefas.ReceitaTarefas import ReceitasTarefas
 
 class ReceitasFrame(ttk.Frame):
     def __init__(self, parent):
@@ -80,6 +81,7 @@ class ReceitasFrame(ttk.Frame):
             add_receita(cliente, oficina, motor, placa, data_str)
             self.populate_receitas_list()
             popup.destroy() # Fecha o popup após o sucesso
+            ReceitasTarefas(self, receita_id=self.tree.get_children()[-1]) # Abre o popup de tarefas para a nova receita
         except Exception as e:
             messagebox.showerror("Erro de Banco de Dados", f"Não foi possível salvar a receita: {e}", parent=popup)
 

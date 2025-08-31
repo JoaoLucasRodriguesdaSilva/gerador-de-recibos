@@ -39,7 +39,7 @@ class PopupReceita:
         button_frame.grid(row=5, column=0, pady=10)
 
         # Botões de salvar e cancelar
-        SaveButton = ttk.Button(button_frame, text="Salvar", command=self.next_step)
+        SaveButton = ttk.Button(button_frame, text="Próximo", command=self.next_step)
         SaveButton.pack(side="left", padx=5)
 
         CancelButton = ttk.Button(button_frame, text="Cancelar", command=self.popup.destroy)
