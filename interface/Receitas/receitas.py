@@ -85,7 +85,7 @@ class ReceitasFrame(ttk.Frame):
             # Pega o ID do último item adicionado na Treeview
             last_item_id = self.tree.get_children()[-1]
             # Pega os valores desse item (o primeiro valor é o ID do banco de dados)
-            db_receita_id = self.tree.item(last_item_id, "values")[0]
+            db_receita_id = int(self.tree.item(last_item_id, "values")[0])
 
             # Abre o popup de tarefas para a nova receita, passando o ID correto
             ReceitasTarefas(self, receita_id=db_receita_id)

@@ -114,7 +114,7 @@ class ReceitasTarefas:
         observacoes = self.entry_observacoes.get()
 
         if not all([quantidade, tarefa, valor]):
-            messagebox.showwarning("Campo Vazio", "Campos obrigatórios devem ser preenchidos.", parent=self)
+            messagebox.showwarning("Campo Vazio", "Campos obrigatórios devem ser preenchidos.", parent=self.popup)
             return
         
         if not observacoes:
