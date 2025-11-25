@@ -69,6 +69,7 @@ class ReceitasTarefas:
         self.entry_tarefa.bind("<Down>", self.move_selection_down)
         self.entry_tarefa.bind("<Up>", self.move_selection_up)
         self.entry_tarefa.bind("<Return>", self.confirm_selection)
+        self.entry_tarefa.bind("<FocusOut>", self.on_focus_out)
 
         # Listbox para sugestões (inicialmente escondida)
         # Mudamos o pai para self.popup para evitar que a lista seja cortada pelo frame
@@ -288,3 +289,18 @@ class ReceitasTarefas:
                 self.entry_tarefa.insert(0, item)
                 self.lista_sugestoes.place_forget()
                 return "break"
+
+    def on_focus_out(self, event):
+        """Agenda verificação para esconder a lista se o foco sair."""
+        self.popup.after(100, self._check_focus_and_hide)
+
+    def _check_focus_and_hide(self):
+        """Esconde a lista se o foco não estiver nela nem no entry."""
+        try:
+            if not self.popup.winfo_exists():
+                return
+            focused = self.popup.focus_get()
+            if focused != self.entry_tarefa and focused != self.lista_sugestoes:
+                self.lista_sugestoes.place_forget()
+        except Exception:
+            pass
