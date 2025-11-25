@@ -78,17 +78,12 @@ class ReceitasFrame(ttk.Frame):
             return
         
         try:
-            add_receita(cliente, oficina, motor, placa, data_str)
+            receita_id = add_receita(cliente, oficina, motor, placa, data_str)
             self.populate_receitas_list()
             popup.destroy() # Fecha o popup após o sucesso
 
-            # Pega o ID do último item adicionado na Treeview
-            last_item_id = self.tree.get_children()[-1]
-            # Pega os valores desse item (o primeiro valor é o ID do banco de dados)
-            db_receita_id = int(self.tree.item(last_item_id, "values")[0])
-
-            # Abre o popup de tarefas para a nova receita, passando o ID correto
-            ReceitasTarefas(self, receita_id=db_receita_id)
+            # Abre o popup de tarefas para a nova receita, passando o ID retornado pelo banco
+            ReceitasTarefas(self, receita_id=receita_id)
         except Exception as e:
             messagebox.showerror("Erro de Banco de Dados", f"Não foi possível salvar a receita: {e}", parent=popup)
 

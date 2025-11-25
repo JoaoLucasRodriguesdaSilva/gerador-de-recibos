@@ -145,6 +145,24 @@ class ReceitasTarefas:
             messagebox.showerror("Tarefa Inválida", "A tarefa selecionada não existe no banco de dados. Selecione uma tarefa da lista.", parent=self.popup)
             return
         
+        # Validação de Quantidade e Valor
+        try:
+            quantidade = int(quantidade)
+            if quantidade <= 0:
+                raise ValueError("Quantidade deve ser maior que zero.")
+        except ValueError:
+            messagebox.showerror("Erro de Validação", "Quantidade deve ser um número inteiro válido.", parent=self.popup)
+            return
+
+        try:
+            # Substitui vírgula por ponto para aceitar formato brasileiro
+            valor = float(valor.replace(',', '.'))
+            if valor < 0:
+                raise ValueError("Valor não pode ser negativo.")
+        except ValueError:
+            messagebox.showerror("Erro de Validação", "Valor deve ser um número válido (ex: 100.00 ou 100,00).", parent=self.popup)
+            return
+
         if not observacoes:
             observacoes = "N/D"
 
@@ -192,7 +210,13 @@ class ReceitasTarefas:
         for item in self.tree.get_children():
             self.tree.delete(item)
         for tarefa in self.tarefas_associadas:
-            self.tree.insert("", "end", values=tarefa)
+            # Cria uma cópia para exibição para formatar o valor como moeda
+            display_values = list(tarefa)
+            # Formata o valor (índice 2)
+            if isinstance(display_values[2], (int, float)):
+                display_values[2] = f"R$ {display_values[2]:.2f}".replace('.', ',')
+            
+            self.tree.insert("", "end", values=display_values)
     
     def remover(self):
         selected_item = self.tree.selection()
@@ -202,9 +226,9 @@ class ReceitasTarefas:
 
         if messagebox.askyesno("Confirmar Deleção", "Você tem certeza que deseja remover esta tarefa da lista?"):
             try:
-                tarefa = self.tree.item(selected_item[0], "values")
-                # Converte para lista para poder remover, pois values retorna tupla
-                self.tarefas_associadas.remove(list(tarefa))
+                # Remove pelo índice para evitar problemas com tipos de dados (str vs float/int)
+                index = self.tree.index(selected_item[0])
+                del self.tarefas_associadas[index]
                 self.update_list()
             except Exception as e:
                 messagebox.showerror("Erro", f"Não foi possível remover: {e}")
