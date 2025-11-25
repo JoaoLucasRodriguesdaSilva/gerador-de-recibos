@@ -66,13 +66,14 @@ class ReceitasTarefas:
         self.entry_tarefa = ttk.Entry(self.atribuir_tarefa_frame)
         self.entry_tarefa.grid(row=0, column=3, padx=5, pady=2, sticky="w")
         self.entry_tarefa.bind("<KeyRelease>", self.on_tarefa_keyrelease)
-        self.entry_tarefa.bind("<Down>", self.focus_sugestoes)
+        self.entry_tarefa.bind("<Down>", self.move_selection_down)
+        self.entry_tarefa.bind("<Up>", self.move_selection_up)
+        self.entry_tarefa.bind("<Return>", self.confirm_selection)
 
         # Listbox para sugestões (inicialmente escondida)
         # Mudamos o pai para self.popup para evitar que a lista seja cortada pelo frame
         self.lista_sugestoes = tk.Listbox(self.popup, height=5)
         self.lista_sugestoes.bind("<ButtonRelease-1>", self.on_sugestao_select)
-        self.lista_sugestoes.bind("<Return>", self.on_sugestao_select)
 
         self.label_valor = ttk.Label(self.atribuir_tarefa_frame, text="Valor:")
         self.label_valor.grid(row=1, column=0, padx=5, pady=2, sticky="w")
@@ -248,10 +249,42 @@ class ReceitasTarefas:
             self.lista_sugestoes.place_forget()
             self.entry_tarefa.focus_set()
 
-    def focus_sugestoes(self, event):
-        """Passa o foco para a lista de sugestões ao apertar Seta para Baixo."""
+    def move_selection_down(self, event):
+        """Move a seleção da lista para baixo sem tirar o foco do Entry."""
         if self.lista_sugestoes.winfo_ismapped():
-            self.lista_sugestoes.focus_set()
-            self.lista_sugestoes.selection_clear(0, tk.END)
-            self.lista_sugestoes.selection_set(0)
-            self.lista_sugestoes.activate(0)
+            current_selection = self.lista_sugestoes.curselection()
+            if current_selection:
+                index = current_selection[0] + 1
+                if index < self.lista_sugestoes.size():
+                    self.lista_sugestoes.selection_clear(0, tk.END)
+                    self.lista_sugestoes.selection_set(index)
+                    self.lista_sugestoes.activate(index)
+                    self.lista_sugestoes.see(index)
+            else:
+                self.lista_sugestoes.selection_set(0)
+                self.lista_sugestoes.activate(0)
+            return "break"
+
+    def move_selection_up(self, event):
+        """Move a seleção da lista para cima sem tirar o foco do Entry."""
+        if self.lista_sugestoes.winfo_ismapped():
+            current_selection = self.lista_sugestoes.curselection()
+            if current_selection:
+                index = current_selection[0] - 1
+                if index >= 0:
+                    self.lista_sugestoes.selection_clear(0, tk.END)
+                    self.lista_sugestoes.selection_set(index)
+                    self.lista_sugestoes.activate(index)
+                    self.lista_sugestoes.see(index)
+            return "break"
+
+    def confirm_selection(self, event):
+        """Confirma a seleção atual da lista ao pressionar Enter."""
+        if self.lista_sugestoes.winfo_ismapped():
+            selection = self.lista_sugestoes.curselection()
+            if selection:
+                item = self.lista_sugestoes.get(selection[0])
+                self.entry_tarefa.delete(0, tk.END)
+                self.entry_tarefa.insert(0, item)
+                self.lista_sugestoes.place_forget()
+                return "break"
