@@ -115,10 +115,6 @@ class ReceitasTarefas:
         self.btn_finalizar = ttk.Button(self.popup, text="Salvar no Banco e Fechar", command=self.salvar_no_banco)
         self.btn_finalizar.pack(side="bottom", padx=5, pady=5)
 
-        # Label de Debug para identificar cliques
-        self.lbl_debug = ttk.Label(self.popup, text="Último clique: Nenhum", foreground="red")
-        self.lbl_debug.pack(side="bottom", padx=5, pady=2)
-
         # Centraliza o popup na janela pai
         self.popup.update_idletasks()
         parent_x = self.parent.winfo_x()
@@ -140,36 +136,21 @@ class ReceitasTarefas:
         self._bind_recursive(self.popup)
 
     def _bind_recursive(self, widget):
-        """Aplica o bind recursivamente em widgets não interativos."""
-        # Bind de debug em TODOS os widgets (add='+' para não sobrescrever eventos existentes)
-        try:
-            widget.bind("<Button-1>", self.update_debug_label, add="+")
-        except Exception:
-            pass
-
-        # Lista de classes de widgets que devem manter seu comportamento padrão de clique
-        # Usamos strings de classe (winfo_class) pois isinstance pode falhar em alguns contextos
-        ignore_classes = (
-            "TEntry", "Entry", "Text", "Listbox", "TCombobox", 
-            "Button", "TButton", "Treeview", "Scrollbar", "TScrollbar"
+        """Aplica o bind recursivamente apenas em widgets de container/texto estático."""
+        # Lista de classes onde o clique deve tirar o foco dos entrys
+        # Focamos apenas em containers e labels, evitando mexer em Entrys, Buttons, etc.
+        background_classes = (
+            "TFrame", "Frame", "TLabel", "Label", "TLabelframe", "Labelframe", "Toplevel"
         )
         
         try:
-            if widget.winfo_class() not in ignore_classes:
+            if widget.winfo_class() in background_classes:
                 widget.bind("<Button-1>", self.check_focus_release, add="+")
         except Exception:
             pass
         
         for child in widget.winfo_children():
             self._bind_recursive(child)
-
-    def update_debug_label(self, event):
-        """Atualiza a label de debug com o tipo do widget clicado."""
-        try:
-            widget_type = event.widget.winfo_class()
-            self.lbl_debug.config(text=f"Último clique: {widget_type}")
-        except Exception:
-            pass
 
     def check_focus_release(self, event):
         """Tira o foco se o widget focado atualmente for um Entry."""
