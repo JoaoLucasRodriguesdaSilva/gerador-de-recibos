@@ -17,8 +17,9 @@ class ReceitasTarefas:
         self.receita = get_receita_by_id(receita_id)
 
         # Carrega tarefas e cria um mapa {Nome: ID} para salvar corretamente depois
+        # O banco retorna tuplas (id, nome), então acessamos por índice
         tarefas_db = get_all_tarefas()
-        self.tarefas_map = {t['nome']: t['id'] for t in tarefas_db}
+        self.tarefas_map = {t[1]: t[0] for t in tarefas_db}
         self.todas_tarefas = list(self.tarefas_map.keys())
 
         self.create_widgets()
@@ -34,19 +35,20 @@ class ReceitasTarefas:
         self.receita_info_frame = ttk.LabelFrame(self.popup, text="Informações da Receita")
         self.receita_info_frame.pack(fill="x", padx=5, pady=5, side="top")
 
-        self.label_cliente = ttk.Label(self.receita_info_frame, text=f"Cliente: {self.receita['cliente']}")
+        # Acessando por índice pois o retorno é uma tupla: (id, cliente, oficina, motor, placa, data)
+        self.label_cliente = ttk.Label(self.receita_info_frame, text=f"Cliente: {self.receita[1]}")
         self.label_cliente.grid(row=0, column=0, padx=5, pady=2, sticky="w")
 
-        self.label_oficina = ttk.Label(self.receita_info_frame, text=f"Oficina: {self.receita['oficina']}")
+        self.label_oficina = ttk.Label(self.receita_info_frame, text=f"Oficina: {self.receita[2]}")
         self.label_oficina.grid(row=1, column=0, padx=5, pady=2, sticky="w")
 
-        self.label_motor_cabecote = ttk.Label(self.receita_info_frame, text=f"Motor/Cabeçote: {self.receita['motor_cabecote']}")
+        self.label_motor_cabecote = ttk.Label(self.receita_info_frame, text=f"Motor/Cabeçote: {self.receita[3]}")
         self.label_motor_cabecote.grid(row=0, column=1, padx=5, pady=2, sticky="w")
 
-        self.label_placa = ttk.Label(self.receita_info_frame, text=f"Placa: {self.receita['placa']}")
+        self.label_placa = ttk.Label(self.receita_info_frame, text=f"Placa: {self.receita[4]}")
         self.label_placa.grid(row=1, column=1, padx=5, pady=2, sticky="w")
 
-        self.label_data = ttk.Label(self.receita_info_frame, text=f"Data: {self.receita['data']}")
+        self.label_data = ttk.Label(self.receita_info_frame, text=f"Data: {self.receita[5]}")
         self.label_data.grid(row=2, column=0, padx=5, pady=2, sticky="w")
 
         self.atribuir_tarefa_frame = ttk.LabelFrame(self.popup, text="Atribuir Tarefa")
@@ -125,6 +127,11 @@ class ReceitasTarefas:
 
         if not all([quantidade, tarefa, valor]):
             messagebox.showwarning("Campo Vazio", "Campos obrigatórios devem ser preenchidos.", parent=self.popup)
+            return
+        
+        # Valida se a tarefa existe no banco
+        if tarefa not in self.tarefas_map:
+            messagebox.showerror("Tarefa Inválida", "A tarefa selecionada não existe no banco de dados. Selecione uma tarefa da lista.", parent=self.popup)
             return
         
         if not observacoes:
