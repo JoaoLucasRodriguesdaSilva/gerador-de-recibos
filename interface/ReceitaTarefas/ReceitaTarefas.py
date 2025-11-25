@@ -128,6 +128,25 @@ class ReceitasTarefas:
         self.popup.geometry(f'+{x}+{y}')
 
         self.popup.grab_set()
+        
+        # Configura clique fora para limpar foco
+        self.setup_focus_dismiss()
+
+    def setup_focus_dismiss(self):
+        """Configura eventos para tirar o foco ao clicar em áreas vazias ou rótulos."""
+        def bind_recursive(widget):
+            if isinstance(widget, (tk.Toplevel, ttk.Frame, ttk.LabelFrame, ttk.Label, tk.Label, tk.Frame, tk.LabelFrame)):
+                widget.bind("<Button-1>", self.clear_focus, add="+")
+            
+            for child in widget.winfo_children():
+                if not isinstance(child, (ttk.Entry, tk.Entry, ttk.Button, tk.Button, ttk.Combobox, tk.Listbox, ttk.Treeview, tk.Text, ttk.Scrollbar)):
+                    bind_recursive(child)
+        
+        bind_recursive(self.popup)
+
+    def clear_focus(self, event):
+        """Foca no popup (tirando de qualquer entry) ao clicar fora."""
+        self.popup.focus_set()
 
     def associar_tarefa(self):
         """Adiciona a tarefa à lista visual (não salva no banco ainda)."""
