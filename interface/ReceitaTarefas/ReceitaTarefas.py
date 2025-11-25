@@ -134,23 +134,22 @@ class ReceitasTarefas:
 
     def setup_focus_dismiss(self):
         """Configura eventos para tirar o foco ao clicar em áreas vazias ou rótulos."""
-        # Lista de classes onde o clique deve tirar o foco dos campos de entrada
-        # Usamos uma lista de permissão (whitelist) ao invés de bloqueio para maior segurança
-        target_classes = ['Toplevel', 'Frame', 'TFrame', 'Labelframe', 'TLabelframe', 'Label', 'TLabel']
+        # Lista dos containers principais onde o clique deve limpar o foco
+        containers = [
+            self.popup,
+            self.receita_info_frame,
+            self.atribuir_tarefa_frame,
+            self.tarefas_associadas_frame
+        ]
         
-        def bind_recursive(widget):
-            try:
-                # Verifica se a classe do widget está na lista de alvos
-                if widget.winfo_class() in target_classes:
-                    widget.bind("<Button-1>", self.clear_focus, add="+")
-            except Exception:
-                pass
+        for widget in containers:
+            # Bind no container (fundo)
+            widget.bind("<Button-1>", self.clear_focus, add="+")
             
-            # Continua recursivamente para os filhos
+            # Bind nos filhos que são apenas Labels (textos estáticos)
             for child in widget.winfo_children():
-                bind_recursive(child)
-        
-        bind_recursive(self.popup)
+                if isinstance(child, (ttk.Label, tk.Label)):
+                    child.bind("<Button-1>", self.clear_focus, add="+")
 
     def clear_focus(self, event):
         """Foca no popup (tirando de qualquer entry) ao clicar fora."""
