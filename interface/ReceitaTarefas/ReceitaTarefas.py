@@ -128,6 +128,19 @@ class ReceitasTarefas:
         self.popup.geometry(f'+{x}+{y}')
 
         self.popup.grab_set()
+        
+        # Configura o comportamento de clicar fora para perder o foco
+        self._setup_focus_handling(self.popup)
+
+    def _setup_focus_handling(self, widget):
+        """Recursivamente adiciona bindings para tirar o foco de Entrys ao clicar fora."""
+        # Se o widget não for um campo de entrada ou interativo que precisa de foco
+        if not isinstance(widget, (ttk.Entry, tk.Entry, tk.Listbox, ttk.Combobox)):
+            widget.bind("<Button-1>", lambda e: self.popup.focus_set())
+        
+        # Aplica recursivamente para os filhos
+        for child in widget.winfo_children():
+            self._setup_focus_handling(child)
 
     def associar_tarefa(self):
         """Adiciona a tarefa à lista visual (não salva no banco ainda)."""
