@@ -71,7 +71,7 @@ class ReceitasTarefas:
         # Listbox para sugestões (inicialmente escondida)
         # Mudamos o pai para self.popup para evitar que a lista seja cortada pelo frame
         self.lista_sugestoes = tk.Listbox(self.popup, height=5)
-        self.lista_sugestoes.bind("<<ListboxSelect>>", self.on_sugestao_select)
+        self.lista_sugestoes.bind("<ButtonRelease-1>", self.on_sugestao_select)
         self.lista_sugestoes.bind("<Return>", self.on_sugestao_select)
 
         self.label_valor = ttk.Label(self.atribuir_tarefa_frame, text="Valor:")
@@ -252,4 +252,6 @@ class ReceitasTarefas:
         """Passa o foco para a lista de sugestões ao apertar Seta para Baixo."""
         if self.lista_sugestoes.winfo_ismapped():
             self.lista_sugestoes.focus_set()
+            self.lista_sugestoes.selection_clear(0, tk.END)
             self.lista_sugestoes.selection_set(0)
+            self.lista_sugestoes.activate(0)
