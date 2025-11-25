@@ -61,10 +61,17 @@ class ReceitasTarefas:
 
         self.label_tarefa = ttk.Label(self.atribuir_tarefa_frame, text="Tarefa:")
         self.label_tarefa.grid(row=0, column=2, padx=5, pady=2, sticky="w")
-        self.entry_tarefa = ttk.Combobox(self.atribuir_tarefa_frame, values=self.todas_tarefas)
+        
+        # Substituindo Combobox por Entry + Listbox customizada
+        self.entry_tarefa = ttk.Entry(self.atribuir_tarefa_frame)
         self.entry_tarefa.grid(row=0, column=3, padx=5, pady=2, sticky="w")
-        self.entry_tarefa.bind("<KeyRelease>", self.on_tarefa_search)
-        self.entry_tarefa.bind("<Button-1>", self.on_tarefa_click)
+        self.entry_tarefa.bind("<KeyRelease>", self.on_tarefa_keyrelease)
+        self.entry_tarefa.bind("<Down>", self.focus_sugestoes)
+
+        # Listbox para sugestões (inicialmente escondida)
+        self.lista_sugestoes = tk.Listbox(self.atribuir_tarefa_frame, height=5)
+        self.lista_sugestoes.bind("<<ListboxSelect>>", self.on_sugestao_select)
+        self.lista_sugestoes.bind("<Return>", self.on_sugestao_select)
 
         self.label_valor = ttk.Label(self.atribuir_tarefa_frame, text="Valor:")
         self.label_valor.grid(row=1, column=0, padx=5, pady=2, sticky="w")
@@ -144,10 +151,13 @@ class ReceitasTarefas:
 
         # Limpa os campos para facilitar a próxima inserção
         self.entry_quantidade.delete(0, 'end')
-        self.entry_tarefa.set('')
+        self.entry_tarefa.delete(0, 'end')
         self.entry_valor.delete(0, 'end')
         self.entry_observacoes.delete(0, 'end')
         self.entry_quantidade.focus_set()
+        
+        # Esconde a lista de sugestões se estiver aberta
+        self.lista_sugestoes.place_forget()
 
     def salvar_no_banco(self):
         """Percorre a lista de tarefas e salva no banco de dados."""
@@ -196,28 +206,47 @@ class ReceitasTarefas:
             except Exception as e:
                 messagebox.showerror("Erro", f"Não foi possível remover: {e}")
 
-    def on_tarefa_click(self, event):
-        """Abre a lista de opções quando o campo é clicado."""
-        self.entry_tarefa.event_generate('<Down>')
-
-    def on_tarefa_search(self, event):
-        """Filtra a lista de tarefas no combobox com base no que o usuário digita."""
-        # Ignora teclas de navegação para permitir que o usuário selecione itens na lista
+    def on_tarefa_keyrelease(self, event):
+        """Filtra e mostra as sugestões conforme o usuário digita."""
+        # Ignora teclas de navegação
         if event.keysym in ['Up', 'Down', 'Left', 'Right', 'Return', 'Escape', 'Tab']:
             return
 
         typed_text = self.entry_tarefa.get()
-
+        
+        # Filtra as tarefas
         if not typed_text:
             filtered_list = self.todas_tarefas
         else:
             filtered_list = [tarefa for tarefa in self.todas_tarefas if typed_text.lower() in tarefa.lower()]
-
-        self.entry_tarefa['values'] = filtered_list
         
-        # Abre a lista automaticamente para mostrar os resultados filtrados
+        # Atualiza a Listbox
+        self.lista_sugestoes.delete(0, tk.END)
+        for item in filtered_list:
+            self.lista_sugestoes.insert(tk.END, item)
+            
+        # Posiciona e mostra a Listbox abaixo do Entry
         if filtered_list:
-            try:
-                self.entry_tarefa.tk.call('ttk::combobox::Post', self.entry_tarefa)
-            except Exception:
-                pass
+            x = self.entry_tarefa.winfo_x()
+            y = self.entry_tarefa.winfo_y() + self.entry_tarefa.winfo_height()
+            w = self.entry_tarefa.winfo_width()
+            self.lista_sugestoes.place(x=x, y=y, width=w)
+            self.lista_sugestoes.lift()
+        else:
+            self.lista_sugestoes.place_forget()
+
+    def on_sugestao_select(self, event):
+        """Preenche o campo com o valor selecionado na lista."""
+        selection = self.lista_sugestoes.curselection()
+        if selection:
+            item = self.lista_sugestoes.get(selection[0])
+            self.entry_tarefa.delete(0, tk.END)
+            self.entry_tarefa.insert(0, item)
+            self.lista_sugestoes.place_forget()
+            self.entry_tarefa.focus_set()
+
+    def focus_sugestoes(self, event):
+        """Passa o foco para a lista de sugestões ao apertar Seta para Baixo."""
+        if self.lista_sugestoes.winfo_ismapped():
+            self.lista_sugestoes.focus_set()
+            self.lista_sugestoes.selection_set(0)
