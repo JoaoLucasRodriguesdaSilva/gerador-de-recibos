@@ -115,6 +115,10 @@ class ReceitasTarefas:
         self.btn_finalizar = ttk.Button(self.popup, text="Salvar no Banco e Fechar", command=self.salvar_no_banco)
         self.btn_finalizar.pack(side="bottom", padx=5, pady=5)
 
+        # Label de Debug para identificar cliques
+        self.lbl_debug = ttk.Label(self.popup, text="Último clique: Nenhum", foreground="red")
+        self.lbl_debug.pack(side="bottom", padx=5, pady=2)
+
         # Centraliza o popup na janela pai
         self.popup.update_idletasks()
         parent_x = self.parent.winfo_x()
@@ -137,6 +141,12 @@ class ReceitasTarefas:
 
     def _bind_recursive(self, widget):
         """Aplica o bind recursivamente em widgets não interativos."""
+        # Bind de debug em TODOS os widgets (add='+' para não sobrescrever eventos existentes)
+        try:
+            widget.bind("<Button-1>", self.update_debug_label, add="+")
+        except Exception:
+            pass
+
         # Lista de widgets que devem manter seu comportamento padrão de clique
         ignore_widgets = (
             tk.Entry, ttk.Entry, tk.Text, tk.Listbox, ttk.Combobox, 
@@ -144,10 +154,18 @@ class ReceitasTarefas:
         )
         
         if not isinstance(widget, ignore_widgets):
-            widget.bind("<Button-1>", self.check_focus_release)
+            widget.bind("<Button-1>", self.check_focus_release, add="+")
         
         for child in widget.winfo_children():
             self._bind_recursive(child)
+
+    def update_debug_label(self, event):
+        """Atualiza a label de debug com o tipo do widget clicado."""
+        try:
+            widget_type = event.widget.winfo_class()
+            self.lbl_debug.config(text=f"Último clique: {widget_type}")
+        except Exception:
+            pass
 
     def check_focus_release(self, event):
         """Tira o foco se o widget focado atualmente for um Entry."""
