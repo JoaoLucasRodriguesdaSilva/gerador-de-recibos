@@ -134,16 +134,19 @@ class ReceitasTarefas:
 
     def setup_focus_dismiss(self):
         """Configura eventos para tirar o foco ao clicar em áreas vazias ou rótulos."""
+        # Lista de classes onde o clique deve tirar o foco dos campos de entrada
+        # Usamos uma lista de permissão (whitelist) ao invés de bloqueio para maior segurança
+        target_classes = ['Toplevel', 'Frame', 'TFrame', 'Labelframe', 'TLabelframe', 'Label', 'TLabel']
+        
         def bind_recursive(widget):
-            # Classes que devem ser ignoradas (interativas)
-            ignore_classes = ['TEntry', 'Entry', 'Text', 'TCombobox', 'Listbox', 'Treeview', 'TButton', 'Button', 'TScrollbar', 'Scrollbar']
-            
             try:
-                if widget.winfo_class() not in ignore_classes:
+                # Verifica se a classe do widget está na lista de alvos
+                if widget.winfo_class() in target_classes:
                     widget.bind("<Button-1>", self.clear_focus, add="+")
             except Exception:
                 pass
             
+            # Continua recursivamente para os filhos
             for child in widget.winfo_children():
                 bind_recursive(child)
         
