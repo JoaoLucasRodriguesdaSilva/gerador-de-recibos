@@ -135,12 +135,17 @@ class ReceitasTarefas:
     def setup_focus_dismiss(self):
         """Configura eventos para tirar o foco ao clicar em áreas vazias ou rótulos."""
         def bind_recursive(widget):
-            if isinstance(widget, (tk.Toplevel, ttk.Frame, ttk.LabelFrame, ttk.Label, tk.Label, tk.Frame, tk.LabelFrame)):
-                widget.bind("<Button-1>", self.clear_focus, add="+")
+            # Classes que devem ser ignoradas (interativas)
+            ignore_classes = ['TEntry', 'Entry', 'Text', 'TCombobox', 'Listbox', 'Treeview', 'TButton', 'Button', 'TScrollbar', 'Scrollbar']
+            
+            try:
+                if widget.winfo_class() not in ignore_classes:
+                    widget.bind("<Button-1>", self.clear_focus, add="+")
+            except Exception:
+                pass
             
             for child in widget.winfo_children():
-                if not isinstance(child, (ttk.Entry, tk.Entry, ttk.Button, tk.Button, ttk.Combobox, tk.Listbox, ttk.Treeview, tk.Text, ttk.Scrollbar)):
-                    bind_recursive(child)
+                bind_recursive(child)
         
         bind_recursive(self.popup)
 
