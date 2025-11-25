@@ -129,18 +129,31 @@ class ReceitasTarefas:
 
         self.popup.grab_set()
         
-        # Configura o comportamento de clicar fora para perder o foco
-        self._setup_focus_handling(self.popup)
+        self.setup_click_outside()
 
-    def _setup_focus_handling(self, widget):
-        """Recursivamente adiciona bindings para tirar o foco de Entrys ao clicar fora."""
-        # Se o widget não for um campo de entrada ou interativo que precisa de foco
-        if not isinstance(widget, (ttk.Entry, tk.Entry, tk.Listbox, ttk.Combobox)):
-            widget.bind("<Button-1>", lambda e: self.popup.focus_set())
+    def setup_click_outside(self):
+        """Configura o evento de clique para tirar o foco dos campos de entrada."""
+        self._bind_recursive(self.popup)
+
+    def _bind_recursive(self, widget):
+        """Aplica o bind recursivamente em widgets não interativos."""
+        # Lista de widgets que devem manter seu comportamento padrão de clique
+        ignore_widgets = (
+            tk.Entry, ttk.Entry, tk.Text, tk.Listbox, ttk.Combobox, 
+            tk.Button, ttk.Button, ttk.Treeview, ttk.Scrollbar
+        )
         
-        # Aplica recursivamente para os filhos
+        if not isinstance(widget, ignore_widgets):
+            widget.bind("<Button-1>", self.check_focus_release)
+        
         for child in widget.winfo_children():
-            self._setup_focus_handling(child)
+            self._bind_recursive(child)
+
+    def check_focus_release(self, event):
+        """Tira o foco se o widget focado atualmente for um Entry."""
+        focused_widget = self.popup.focus_get()
+        if isinstance(focused_widget, (tk.Entry, ttk.Entry, tk.Text, ttk.Combobox)):
+            self.popup.focus_set()
 
     def associar_tarefa(self):
         """Adiciona a tarefa à lista visual (não salva no banco ainda)."""
