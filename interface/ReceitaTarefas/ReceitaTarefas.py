@@ -69,7 +69,8 @@ class ReceitasTarefas:
         self.entry_tarefa.bind("<Down>", self.focus_sugestoes)
 
         # Listbox para sugestões (inicialmente escondida)
-        self.lista_sugestoes = tk.Listbox(self.atribuir_tarefa_frame, height=5)
+        # Mudamos o pai para self.popup para evitar que a lista seja cortada pelo frame
+        self.lista_sugestoes = tk.Listbox(self.popup, height=5)
         self.lista_sugestoes.bind("<<ListboxSelect>>", self.on_sugestao_select)
         self.lista_sugestoes.bind("<Return>", self.on_sugestao_select)
 
@@ -227,9 +228,11 @@ class ReceitasTarefas:
             
         # Posiciona e mostra a Listbox abaixo do Entry
         if filtered_list:
-            x = self.entry_tarefa.winfo_x()
-            y = self.entry_tarefa.winfo_y() + self.entry_tarefa.winfo_height()
+            # Calcula a posição relativa à janela popup, pois a lista agora é filha do popup
+            x = self.entry_tarefa.winfo_rootx() - self.popup.winfo_rootx()
+            y = self.entry_tarefa.winfo_rooty() - self.popup.winfo_rooty() + self.entry_tarefa.winfo_height()
             w = self.entry_tarefa.winfo_width()
+            
             self.lista_sugestoes.place(x=x, y=y, width=w)
             self.lista_sugestoes.lift()
         else:
