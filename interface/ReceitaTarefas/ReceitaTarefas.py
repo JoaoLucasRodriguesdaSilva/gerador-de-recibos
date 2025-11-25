@@ -202,6 +202,10 @@ class ReceitasTarefas:
 
     def on_tarefa_search(self, event):
         """Filtra a lista de tarefas no combobox com base no que o usuário digita."""
+        # Ignora teclas de navegação para permitir que o usuário selecione itens na lista
+        if event.keysym in ['Up', 'Down', 'Left', 'Right', 'Return', 'Escape', 'Tab']:
+            return
+
         typed_text = self.entry_tarefa.get()
 
         if not typed_text:
@@ -210,3 +214,10 @@ class ReceitasTarefas:
             filtered_list = [tarefa for tarefa in self.todas_tarefas if typed_text.lower() in tarefa.lower()]
 
         self.entry_tarefa['values'] = filtered_list
+        
+        # Abre a lista automaticamente para mostrar os resultados filtrados
+        if filtered_list:
+            try:
+                self.entry_tarefa.tk.call('ttk::combobox::Post', self.entry_tarefa)
+            except Exception:
+                pass
