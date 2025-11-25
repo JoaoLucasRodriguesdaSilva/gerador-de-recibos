@@ -147,14 +147,18 @@ class ReceitasTarefas:
         except Exception:
             pass
 
-        # Lista de widgets que devem manter seu comportamento padrão de clique
-        ignore_widgets = (
-            tk.Entry, ttk.Entry, tk.Text, tk.Listbox, ttk.Combobox, 
-            tk.Button, ttk.Button, ttk.Treeview, ttk.Scrollbar
+        # Lista de classes de widgets que devem manter seu comportamento padrão de clique
+        # Usamos strings de classe (winfo_class) pois isinstance pode falhar em alguns contextos
+        ignore_classes = (
+            "TEntry", "Entry", "Text", "Listbox", "TCombobox", 
+            "Button", "TButton", "Treeview", "Scrollbar", "TScrollbar"
         )
         
-        if not isinstance(widget, ignore_widgets):
-            widget.bind("<Button-1>", self.check_focus_release, add="+")
+        try:
+            if widget.winfo_class() not in ignore_classes:
+                widget.bind("<Button-1>", self.check_focus_release, add="+")
+        except Exception:
+            pass
         
         for child in widget.winfo_children():
             self._bind_recursive(child)
@@ -170,8 +174,13 @@ class ReceitasTarefas:
     def check_focus_release(self, event):
         """Tira o foco se o widget focado atualmente for um Entry."""
         focused_widget = self.popup.focus_get()
-        if isinstance(focused_widget, (tk.Entry, ttk.Entry, tk.Text, ttk.Combobox)):
-            self.popup.focus_set()
+        if focused_widget:
+            try:
+                # Verifica se o widget focado é um campo de texto pelo nome da classe
+                if focused_widget.winfo_class() in ("TEntry", "Entry", "Text", "TCombobox"):
+                    self.popup.focus_set()
+            except Exception:
+                pass
 
     def associar_tarefa(self):
         """Adiciona a tarefa à lista visual (não salva no banco ainda)."""
