@@ -64,6 +64,7 @@ class ReceitasTarefas:
         self.entry_tarefa = ttk.Combobox(self.atribuir_tarefa_frame, values=self.todas_tarefas)
         self.entry_tarefa.grid(row=0, column=3, padx=5, pady=2, sticky="w")
         self.entry_tarefa.bind("<KeyRelease>", self.on_tarefa_search)
+        self.entry_tarefa.bind("<FocusIn>", self.on_tarefa_focus)
 
         self.label_valor = ttk.Label(self.atribuir_tarefa_frame, text="Valor:")
         self.label_valor.grid(row=1, column=0, padx=5, pady=2, sticky="w")
@@ -194,6 +195,10 @@ class ReceitasTarefas:
                 self.update_list()
             except Exception as e:
                 messagebox.showerror("Erro", f"Não foi possível remover: {e}")
+
+    def on_tarefa_focus(self, event):
+        """Abre a lista de opções quando o campo recebe foco."""
+        self.entry_tarefa.event_generate('<Down>')
 
     def on_tarefa_search(self, event):
         """Filtra a lista de tarefas no combobox com base no que o usuário digita."""
