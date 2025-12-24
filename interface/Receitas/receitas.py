@@ -9,6 +9,7 @@ from database.receitas import add_receita, get_all_receitas, delete_receita
 from interface.Receitas.popup.PopupReceita import PopupReceita
 from interface.Tarefas.RegistroTarefas import RegistroTarefas
 from interface.ReceitaTarefas.ReceitaTarefas import ReceitasTarefas
+from interface.ViewReceitas.view_receitas import ViewReceita
 
 class ReceitasFrame(ttk.Frame):
     def __init__(self, parent):
@@ -57,6 +58,7 @@ class ReceitasFrame(ttk.Frame):
         # --- Botões da Lista ---
         list_button_frame = ttk.Frame(self)
         list_button_frame.pack(fill="x", padx=5, pady=(0, 5), anchor="w")
+        ttk.Button(list_button_frame, text="Visualizar Selecionada", command=self.view_selected_receita).pack(side="left", padx=(0, 5))
         ttk.Button(list_button_frame, text="Deletar Selecionada", command=self.delete_selected_receita).pack(side="left")
 
     def populate_receitas_list(self):
@@ -86,6 +88,16 @@ class ReceitasFrame(ttk.Frame):
             ReceitasTarefas(self, receita_id=receita_id)
         except Exception as e:
             messagebox.showerror("Erro de Banco de Dados", f"Não foi possível salvar a receita: {e}", parent=popup)
+
+    def view_selected_receita(self):
+        selected_item = self.tree.selection()
+        if not selected_item:
+            messagebox.showwarning("Nenhuma Seleção", "Por favor, selecione uma receita para visualizar.")
+            return
+        
+        # O primeiro valor da tupla values é o ID
+        receita_id = self.tree.item(selected_item[0], "values")[0]
+        ViewReceita(self, receita_id)
 
     def delete_selected_receita(self):
         selected_item = self.tree.selection()

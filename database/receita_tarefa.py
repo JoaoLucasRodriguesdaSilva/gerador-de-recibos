@@ -18,12 +18,13 @@ def add_tarefa_to_receita(receita_id, tarefa_id, quantidade, valor, observacoes)
 
 # Retorna as tarefas associadas a uma receita
 def get_tarefas_from_receita(receita_id):
-    """Retorna todas as tarefas associadas a uma receita específica."""
+    """Retorna todas as tarefas associadas a uma receita específica com detalhes."""
     conn = connect_db()
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT t.* FROM tarefas t
+        SELECT t.id, t.nome, rt.quantidade, rt.valor, rt.observacoes 
+        FROM tarefas t
         JOIN receita_tarefa rt ON t.id = rt.tarefa_id
         WHERE rt.receita_id = ?
     """, (receita_id,))
