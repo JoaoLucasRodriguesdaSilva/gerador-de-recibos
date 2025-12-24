@@ -106,14 +106,18 @@ class ReceitasTarefas:
         scrollbar.pack(side="right", fill="y")
         self.tree.configure(yscroll=scrollbar.set)
 
-        self.salvar_button = ttk.Button(self.popup, text="Adicionar à Lista", command=self.associar_tarefa)
-        self.salvar_button.pack(side="bottom", padx=5, pady=5)
+        # Frame para botões
+        self.buttons_frame = ttk.Frame(self.popup)
+        self.buttons_frame.pack(side="bottom", fill="x", padx=5, pady=5)
 
-        self.remover_button = ttk.Button(self.popup, text="Remover da Lista", command=self.remover)
-        self.remover_button.pack(side="bottom", padx=5, pady=5)
+        self.salvar_button = ttk.Button(self.buttons_frame, text="Adicionar à Lista", command=self.associar_tarefa)
+        self.salvar_button.pack(side="left", padx=5, expand=True, fill="x")
 
-        self.btn_finalizar = ttk.Button(self.popup, text="Salvar no Banco e Fechar", command=self.salvar_no_banco)
-        self.btn_finalizar.pack(side="bottom", padx=5, pady=5)
+        self.remover_button = ttk.Button(self.buttons_frame, text="Remover da Lista", command=self.remover)
+        self.remover_button.pack(side="left", padx=5, expand=True, fill="x")
+
+        self.btn_finalizar = ttk.Button(self.buttons_frame, text="Salvar no Banco e Fechar", command=self.salvar_no_banco)
+        self.btn_finalizar.pack(side="left", padx=5, expand=True, fill="x")
 
         # Centraliza o popup na janela pai
         self.popup.update_idletasks()
