@@ -128,40 +128,6 @@ class ReceitasTarefas:
         self.popup.geometry(f'+{x}+{y}')
 
         self.popup.grab_set()
-        
-        self.setup_click_outside()
-
-    def setup_click_outside(self):
-        """Configura o evento de clique para tirar o foco dos campos de entrada."""
-        self._bind_recursive(self.popup)
-
-    def _bind_recursive(self, widget):
-        """Aplica o bind recursivamente apenas em widgets de container/texto estático."""
-        # Lista de classes onde o clique deve tirar o foco dos entrys
-        # Focamos apenas em containers e labels, evitando mexer em Entrys, Buttons, etc.
-        background_classes = (
-            "TFrame", "Frame", "TLabel", "Label", "TLabelframe", "Labelframe", "Toplevel"
-        )
-        
-        try:
-            if widget.winfo_class() in background_classes:
-                widget.bind("<Button-1>", self.check_focus_release, add="+")
-        except Exception:
-            pass
-        
-        for child in widget.winfo_children():
-            self._bind_recursive(child)
-
-    def check_focus_release(self, event):
-        """Tira o foco se o widget focado atualmente for um Entry."""
-        focused_widget = self.popup.focus_get()
-        if focused_widget:
-            try:
-                # Verifica se o widget focado é um campo de texto pelo nome da classe
-                if focused_widget.winfo_class() in ("TEntry", "Entry", "Text", "TCombobox"):
-                    self.popup.focus_set()
-            except Exception:
-                pass
 
     def associar_tarefa(self):
         """Adiciona a tarefa à lista visual (não salva no banco ainda)."""
