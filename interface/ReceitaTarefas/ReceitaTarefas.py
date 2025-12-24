@@ -90,7 +90,11 @@ class ReceitasTarefas:
         self.tarefas_associadas_frame.pack(fill="both", expand=True, padx=5, pady=5)
 
         self.tree = ttk.Treeview(self.tarefas_associadas_frame, columns=("nome", "quantidade", "valor", "observacoes"), show="headings")
-        self.tree.pack(fill="both", expand=True)
+        
+        scrollbar = ttk.Scrollbar(self.tarefas_associadas_frame, orient="vertical", command=self.tree.yview)
+        scrollbar.pack(side="right", fill="y")
+        
+        self.tree.pack(side="left", fill="both", expand=True)
 
         self.tree.heading("quantidade", text="Quantidade")
         self.tree.heading("nome", text="Tarefa")
@@ -102,8 +106,6 @@ class ReceitasTarefas:
         self.tree.column("valor", width=20, anchor="center")
         self.tree.column("observacoes", width=100, anchor="w")
 
-        scrollbar = ttk.Scrollbar(self.tarefas_associadas_frame, orient="vertical", command=self.tree.yview)
-        scrollbar.pack(side="right", fill="y")
         self.tree.configure(yscroll=scrollbar.set)
 
         # Frame para botões
