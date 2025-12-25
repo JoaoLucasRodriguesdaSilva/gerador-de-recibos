@@ -2,9 +2,11 @@ import sys
 import os
 import tkinter as tk
 from tkinter import ttk
-from Receitas.receitas import ReceitasFrame
 
+# Adiciona o diretório raiz ao path antes de importar módulos do projeto
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from interface.Receitas.receitas import ReceitasFrame
 from database.criar_bd import create_table
 
 class MainApp:
@@ -38,7 +40,8 @@ class MainApp:
         receitas_frame = ReceitasFrame(self.container)
         receitas_frame.pack(fill="both", expand=True)
 
-create_table()
-root = tk.Tk()
-app = MainApp(root)
-root.mainloop()
+if __name__ == "__main__":
+    create_table()
+    root = tk.Tk()
+    app = MainApp(root)
+    root.mainloop()
