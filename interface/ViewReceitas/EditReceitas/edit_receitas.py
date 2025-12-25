@@ -18,7 +18,14 @@ class EditReceitas:
         self.popup.title(f"Editar Receita #{receita[0]}")
         self.popup.transient(parent)
         self.popup.grab_set()
-        self.popup.geometry("500x600")
+        
+        # Centralizar popup
+        self.popup.update_idletasks()
+        width = 500
+        height = 600
+        x = parent.winfo_rootx() + (parent.winfo_width() // 2) - (width // 2)
+        y = parent.winfo_rooty() + (parent.winfo_height() // 2) - (height // 2)
+        self.popup.geometry(f"{width}x{height}+{x}+{y}")
 
         # 2. Criar frame com os dados pré-preenchidos de cliente, oficina, motor/cabeçote, placa, data
         self.create_form()

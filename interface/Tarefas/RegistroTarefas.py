@@ -52,8 +52,8 @@ class RegistroTarefas:
 
         # Centraliza o popup na janela pai
         self.popup.update_idletasks()
-        parent_x = self.parent.winfo_x()
-        parent_y = self.parent.winfo_y()
+        parent_x = self.parent.winfo_rootx()
+        parent_y = self.parent.winfo_rooty()
         parent_width = self.parent.winfo_width()
         parent_height = self.parent.winfo_height()
         popup_width = self.popup.winfo_width()
