@@ -12,14 +12,6 @@ class PopupReceita:
         self.popup = tk.Toplevel(parent)
         self.popup.title("Adicionar Receita")
         self.popup.transient(parent)
-        
-        # Centralizar popup
-        self.popup.update_idletasks()
-        width = 400
-        height = 450
-        x = parent.winfo_rootx() + (parent.winfo_width() // 2) - (width // 2)
-        y = parent.winfo_rooty() + (parent.winfo_height() // 2) - (height // 2)
-        self.popup.geometry(f"{width}x{height}+{x}+{y}")
 
         # Frame principal do popup
         popup_frame = ttk.Frame(self.popup, padding=10)
@@ -52,6 +44,14 @@ class PopupReceita:
 
         CancelButton = ttk.Button(button_frame, text="Cancelar", command=self.popup.destroy)
         CancelButton.pack(side="left")
+
+        # Centralizar popup ajustando ao tamanho do conteúdo
+        self.popup.update_idletasks()
+        width = self.popup.winfo_reqwidth()
+        height = self.popup.winfo_reqheight()
+        x = parent.winfo_rootx() + (parent.winfo_width() // 2) - (width // 2)
+        y = parent.winfo_rooty() + (parent.winfo_height() // 2) - (height // 2)
+        self.popup.geometry(f"+{x}+{y}")
 
         self.popup.grab_set()
 

@@ -19,19 +19,19 @@ class EditReceitas:
         self.popup.transient(parent)
         self.popup.grab_set()
         
-        # Centralizar popup
-        self.popup.update_idletasks()
-        width = 500
-        height = 600
-        x = parent.winfo_rootx() + (parent.winfo_width() // 2) - (width // 2)
-        y = parent.winfo_rooty() + (parent.winfo_height() // 2) - (height // 2)
-        self.popup.geometry(f"{width}x{height}+{x}+{y}")
-
         # 2. Criar frame com os dados pré-preenchidos de cliente, oficina, motor/cabeçote, placa, data
         self.create_form()
 
         # 3. Botão salvar que atualiza os dados no banco de dados e botão cancelar para fechar o pop-up
         self.create_buttons()
+
+        # Centralizar popup ajustando ao tamanho do conteúdo
+        self.popup.update_idletasks()
+        width = self.popup.winfo_reqwidth()
+        height = self.popup.winfo_reqheight()
+        x = parent.winfo_rootx() + (parent.winfo_width() // 2) - (width // 2)
+        y = parent.winfo_rooty() + (parent.winfo_height() // 2) - (height // 2)
+        self.popup.geometry(f"+{x}+{y}")
 
     def create_form(self):
         # Frame principal do formulário
@@ -62,10 +62,10 @@ class EditReceitas:
         button_frame.pack(fill="x", side="bottom")
 
         save_btn = ttk.Button(button_frame, text="Salvar", command=self.save_receita)
-        save_btn.pack(side="left", padx=5)
+        save_btn.pack(side="left", padx=5, expand=True, anchor="e")
 
         cancel_btn = ttk.Button(button_frame, text="Cancelar", command=self.popup.destroy)
-        cancel_btn.pack(side="left", padx=5)
+        cancel_btn.pack(side="left", padx=5, expand=True, anchor="w")
 
     def save_receita(self):
         cliente = self.cliente_entry.get_entry_value()
