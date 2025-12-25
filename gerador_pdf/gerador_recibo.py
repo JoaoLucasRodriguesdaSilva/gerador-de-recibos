@@ -1,8 +1,11 @@
-from weasyprint import HTML
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 
 def create_pdf(receita, tarefas, output_file="recibo.pdf"):
     """
-    Gera um PDF de recibo com base nos dados da receita e tarefas fornecidos.
+    Gera um PDF de recibo com base nos dados da receita e tarefas fornecidos usando ReportLab.
     
     Args:
         receita (dict): Dicionário contendo dados da receita (cliente, data, oficina, etc).
@@ -10,78 +13,94 @@ def create_pdf(receita, tarefas, output_file="recibo.pdf"):
         output_file (str): Caminho para salvar o arquivo PDF gerado.
     """
     
-    # Calcular total geral
-    total_geral = sum(t['quantidade'] * t['valor'] for t in tarefas)
+    doc = SimpleDocTemplate(output_file, pagesize=A4)
+    elements = []
+    styles = getSampleStyleSheet()
     
-    # Gerar linhas da tabela
-    rows_html = ""
+    # Estilos personalizados
+    title_style = styles['Heading1']
+    title_style.alignment = 1 # Center
+    
+    normal_style = styles['Normal']
+    
+    # Cabeçalho
+    elements.append(Paragraph("Recibo de Serviços", title_style))
+    elements.append(Spacer(1, 20))
+    
+    # Informações da Receita
+    info_data = [
+        [f"Data: {receita.get('data', '')}"],
+        [f"Cliente: {receita.get('cliente', '')}"],
+        [f"Oficina: {receita.get('oficina', '')}"],
+        [f"Motor/Cabeçote: {receita.get('motor_cabecote', '')}"],
+        [f"Placa: {receita.get('placa', '')}"]
+    ]
+    
+    # Adiciona informações como parágrafos para melhor formatação
+    for info in info_data:
+        elements.append(Paragraph(f"<b>{info[0].split(':')[0]}:</b> {info[0].split(':')[1]}", normal_style))
+        elements.append(Spacer(1, 5))
+        
+    elements.append(Spacer(1, 20))
+    elements.append(Paragraph("Detalhes dos serviços prestados:", styles['Heading3']))
+    elements.append(Spacer(1, 10))
+    
+    # Tabela de Tarefas
+    table_data = [['Descrição', 'Qtd', 'Valor Unit.', 'Total']]
+    
+    total_geral = 0
     for t in tarefas:
         total_item = t['quantidade'] * t['valor']
-        # Formatar valores monetários para o padrão brasileiro (simples)
-        valor_unitario_fmt = f"R$ {t['valor']:.2f}".replace('.', ',')
+        total_geral += total_item
+        
+        valor_unit_fmt = f"R$ {t['valor']:.2f}".replace('.', ',')
         total_item_fmt = f"R$ {total_item:.2f}".replace('.', ',')
         
-        rows_html += f"""
-            <tr>
-                <td>{t['descricao']}</td>
-                <td>{t['quantidade']}</td>
-                <td>{valor_unitario_fmt}</td>
-                <td>{total_item_fmt}</td>
-            </tr>
-        """
-
-    # Formatar total geral
-    total_geral_fmt = f"R$ {total_geral:.2f}".replace('.', ',')
-
-    html_content = f"""
-    <html>
-        <head>
-            <style>
-                body {{ font-family: sans-serif; }}
-                h1 {{ color: #333; }}
-                .header {{ margin-bottom: 20px; }}
-                table {{ width: 100%; border-collapse: collapse; margin-top: 20px; }}
-                th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
-                th {{ background-color: #f2f2f2; }}
-                .total {{ margin-top: 20px; text-align: right; font-weight: bold; font-size: 1.2em; }}
-                .info p {{ margin: 5px 0; }}
-                .info {{ margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }}
-            </style>
-        </head>
-        <body>
-            <div class="header">
-                <h1>Recibo de Serviços</h1>
-                <div class="info">
-                    <p><strong>Data:</strong> {receita.get('data', '')}</p>
-                    <p><strong>Cliente:</strong> {receita.get('cliente', '')}</p>
-                    <p><strong>Oficina:</strong> {receita.get('oficina', '')}</p>
-                    <p><strong>Motor/Cabeçote:</strong> {receita.get('motor_cabecote', '')}</p>
-                    <p><strong>Placa:</strong> {receita.get('placa', '')}</p>
-                </div>
-            </div>
-            
-            <p>Detalhes dos serviços prestados:</p>
-            
-            <table>
-                <thead>
-                    <tr>
-                        <th>Descrição</th>
-                        <th>Quantidade</th>
-                        <th>Valor Unitário</th>
-                        <th>Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {rows_html}
-                </tbody>
-            </table>
-            
-            <div class="total">
-                <p>Total a Pagar: {total_geral_fmt}</p>
-            </div>
-        </body>
-    </html>
-    """
+        table_data.append([
+            t['descricao'],
+            str(t['quantidade']),
+            valor_unit_fmt,
+            total_item_fmt
+        ])
     
-    HTML(string=html_content).write_pdf(output_file)
+    # Estilo da Tabela
+    table = Table(table_data, colWidths=[250, 50, 80, 80])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('ALIGN', (1, 0), (-1, -1), 'CENTER'), # Quantidade e Valores centralizados/direita
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+    ]))
+    
+    elements.append(table)
+    elements.append(Spacer(1, 20))
+    
+    # Total Geral
+    total_geral_fmt = f"R$ {total_geral:.2f}".replace('.', ',')
+    elements.append(Paragraph(f"<b>Total a Pagar: {total_geral_fmt}</b>", styles['Heading2']))
+    
+    # Gerar PDF
+    doc.build(elements)
     print(f"PDF gerado com sucesso: {output_file}")
+
+if __name__ == "__main__":
+    # Dados de exemplo para teste
+    receita_exemplo = {
+        "cliente": "João Silva",
+        "data": "25/12/2025",
+        "oficina": "Oficina do Pedro",
+        "motor_cabecote": "AP 1.8",
+        "placa": "ABC-1234"
+    }
+    
+    tarefas_exemplo = [
+        {"descricao": "Troca de Óleo", "quantidade": 1, "valor": 150.00},
+        {"descricao": "Alinhamento", "quantidade": 1, "valor": 80.00},
+        {"descricao": "Balanceamento", "quantidade": 4, "valor": 20.00}
+    ]
+    
+    create_pdf(receita_exemplo, tarefas_exemplo, "exemplo_recibo_reportlab.pdf")
