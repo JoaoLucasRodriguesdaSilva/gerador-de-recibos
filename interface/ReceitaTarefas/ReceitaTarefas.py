@@ -6,15 +6,16 @@ import os
 # Adiciona o diretório raiz do projeto ao sys.path para encontrar os módulos do banco de dados
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
-from database.receitas import get_receita_by_id
 from database.tarefas import get_all_tarefas
 from database.receita_tarefa import add_tarefa_to_receita
+from database.receitas import add_receita
+from gerador_pdf.gerador_recibo import create_pdf
 
 class ReceitasTarefas:
-    def __init__(self, parent, receita_id):
+    def __init__(self, parent, receita):
         self.parent = parent
-        self.receita_id = receita_id
-        self.receita = get_receita_by_id(receita_id)
+        self.receita = receita
+        self.receita_id = receita[0]
 
         # Carrega tarefas e cria um mapa {Nome: ID} para salvar corretamente depois
         # O banco retorna tuplas (id, nome), então acessamos por índice
@@ -193,6 +194,15 @@ class ReceitasTarefas:
             return
 
         try:
+            # Se a receita ainda não tem ID (é nova), salva ela primeiro
+            if self.receita_id is None:
+                _, cliente, oficina, motor, placa, data_str = self.receita
+                self.receita_id = add_receita(cliente, oficina, motor, placa, data_str)
+                
+                # Atualiza a lista na janela principal se possível
+                if hasattr(self.parent, 'populate_receitas_list'):
+                    self.parent.populate_receitas_list()
+
             for item in self.tarefas_associadas:
                 # item = [tarefa_nome, quantidade, valor, observacoes]
                 nome, qtd, val, obs = item
@@ -206,11 +216,46 @@ class ReceitasTarefas:
                     # Caso raro onde o nome não existe no mapa (ex: digitado manualmente e não selecionado)
                     print(f"Aviso: Tarefa '{nome}' não encontrada no banco. Ignorada.")
             
-            messagebox.showinfo("Sucesso", "Tarefas salvas na receita com sucesso!", parent=self.popup)
+            # Gera o PDF do recibo
+            self.gerar_pdf_recibo()
+
+            messagebox.showinfo("Sucesso", f"Receita salva e PDF gerado (recibo_{self.receita_id}.pdf)!", parent=self.popup)
             self.popup.destroy()
             
         except Exception as e:
             messagebox.showerror("Erro", f"Erro ao salvar no banco: {e}", parent=self.popup)
+
+    def gerar_pdf_recibo(self):
+        """Coleta os dados e chama o gerador de PDF."""
+        receita_dict = {
+            "cliente": self.receita[1],
+            "oficina": self.receita[2],
+            "motor_cabecote": self.receita[3],
+            "placa": self.receita[4],
+            "data": self.receita[5]
+        }
+        
+        tarefas_list = []
+        for item in self.tarefas_associadas:
+            tarefas_list.append({
+                "descricao": item[0],
+                "quantidade": item[1],
+                "valor": item[2]
+            })
+            
+        # Define o caminho para salvar o PDF na pasta 'recibos' na raiz do projeto
+        recibos_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../recibos'))
+        os.makedirs(recibos_dir, exist_ok=True)
+        
+        output_file = os.path.join(recibos_dir, f"recibo_{self.receita_id}.pdf")
+        
+        try:
+            create_pdf(receita_dict, tarefas_list, output_file)
+            print(f"PDF gerado em: {output_file}")
+        except Exception as e:
+            print(f"Erro ao gerar PDF: {e}")
+            # Não impede o fluxo principal, apenas loga o erro (ou poderia mostrar um aviso)
+            messagebox.showwarning("Aviso PDF", f"Receita salva, mas erro ao gerar PDF: {e}", parent=self.popup)
 
     def update_list(self):
         for item in self.tree.get_children():

@@ -79,15 +79,13 @@ class ReceitasFrame(ttk.Frame):
             messagebox.showwarning("Campo Vazio", "Todos os campos devem ser preenchidos.", parent=popup)
             return
         
-        try:
-            receita_id = add_receita(cliente, oficina, motor, placa, data_str)
-            self.populate_receitas_list()
-            popup.destroy() # Fecha o popup após o sucesso
+        # Fecha o popup de dados da receita
+        popup.destroy()
 
-            # Abre o popup de tarefas para a nova receita, passando o ID retornado pelo banco
-            ReceitasTarefas(self, receita_id=receita_id)
-        except Exception as e:
-            messagebox.showerror("Erro de Banco de Dados", f"Não foi possível salvar a receita: {e}", parent=popup)
+        # Abre o popup de tarefas para a nova receita
+        # Passamos None como ID pois a receita ainda não foi salva no banco
+        nova_receita = (None, cliente, oficina, motor, placa, data_str)
+        ReceitasTarefas(self, receita=nova_receita)
 
     def view_selected_receita(self):
         selected_item = self.tree.selection()

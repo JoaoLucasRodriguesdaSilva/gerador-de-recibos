@@ -156,7 +156,7 @@ class ViewReceita:
 
     def add_tarefa(self):
         # Abre a janela de adicionar tarefas
-        app = ReceitasTarefas(self.popup, self.receita_id)
+        app = ReceitasTarefas(self.popup, self.receita)
         self.popup.wait_window(app.popup)
         self.populate_tarefas()
 

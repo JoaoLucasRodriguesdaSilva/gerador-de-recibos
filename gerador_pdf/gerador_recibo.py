@@ -85,21 +85,3 @@ def create_pdf(receita, tarefas, output_file="recibo.pdf"):
     
     HTML(string=html_content).write_pdf(output_file)
     print(f"PDF gerado com sucesso: {output_file}")
-
-if __name__ == "__main__":
-    # Dados de exemplo para teste
-    receita_exemplo = {
-        "cliente": "João Silva",
-        "data": "25/12/2025",
-        "oficina": "Oficina do Pedro",
-        "motor_cabecote": "AP 1.8",
-        "placa": "ABC-1234"
-    }
-    
-    tarefas_exemplo = [
-        {"descricao": "Troca de Óleo", "quantidade": 1, "valor": 150.00},
-        {"descricao": "Alinhamento", "quantidade": 1, "valor": 80.00},
-        {"descricao": "Balanceamento", "quantidade": 4, "valor": 20.00}
-    ]
-    
-    create_pdf(receita_exemplo, tarefas_exemplo, "exemplo_recibo_dinamico.pdf")
