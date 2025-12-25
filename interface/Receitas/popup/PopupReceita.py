@@ -53,18 +53,6 @@ class PopupReceita:
         CancelButton = ttk.Button(button_frame, text="Cancelar", command=self.popup.destroy)
         CancelButton.pack(side="left")
 
-        # Centraliza o popup na janela pai
-        self.popup.update_idletasks()
-        parent_x = self.parent.winfo_x()
-        parent_y = self.parent.winfo_y()
-        parent_width = self.parent.winfo_width()
-        parent_height = self.parent.winfo_height()
-        popup_width = self.popup.winfo_width()
-        popup_height = self.popup.winfo_height()
-        x = parent_x + (parent_width // 2) - (popup_width // 2)
-        y = parent_y + (parent_height // 2) - (popup_height // 2)
-        self.popup.geometry(f'+{x}+{y}')
-
         self.popup.grab_set()
 
     def next_step(self):
