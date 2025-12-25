@@ -9,6 +9,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')
 from database.receitas import get_receita_by_id, delete_receita
 from database.receita_tarefa import get_tarefas_from_receita, remove_tarefa_from_receita
 from interface.ReceitaTarefas.ReceitaTarefas import ReceitasTarefas
+from interface.ViewReceitas.EditReceitas.edit_receitas import EditReceitas
 
 class ViewReceita:
     def __init__(self, parent, receita_id):
@@ -56,21 +57,26 @@ class ViewReceita:
 
         # Linha 0
         ttk.Label(self.info_frame, text="Cliente:", font=("", 9, "bold")).grid(row=0, column=0, sticky="e", padx=5, pady=2)
-        ttk.Label(self.info_frame, text=self.receita[1]).grid(row=0, column=1, sticky="w", padx=5, pady=2)
+        self.cliente_label = ttk.Label(self.info_frame, text=self.receita[1])
+        self.cliente_label.grid(row=0, column=1, sticky="w", padx=5, pady=2)
 
         ttk.Label(self.info_frame, text="Motor/Cabeçote:", font=("", 9, "bold")).grid(row=0, column=2, sticky="e", padx=5, pady=2)
-        ttk.Label(self.info_frame, text=self.receita[3]).grid(row=0, column=3, sticky="w", padx=5, pady=2)
+        self.motor_label = ttk.Label(self.info_frame, text=self.receita[3])
+        self.motor_label.grid(row=0, column=3, sticky="w", padx=5, pady=2)
 
         # Linha 1
         ttk.Label(self.info_frame, text="Oficina:", font=("", 9, "bold")).grid(row=1, column=0, sticky="e", padx=5, pady=2)
-        ttk.Label(self.info_frame, text=self.receita[2]).grid(row=1, column=1, sticky="w", padx=5, pady=2)
+        self.oficina_label = ttk.Label(self.info_frame, text=self.receita[2])
+        self.oficina_label.grid(row=1, column=1, sticky="w", padx=5, pady=2)
 
         ttk.Label(self.info_frame, text="Placa:", font=("", 9, "bold")).grid(row=1, column=2, sticky="e", padx=5, pady=2)
-        ttk.Label(self.info_frame, text=self.receita[4]).grid(row=1, column=3, sticky="w", padx=5, pady=2)
+        self.placa_label = ttk.Label(self.info_frame, text=self.receita[4])
+        self.placa_label.grid(row=1, column=3, sticky="w", padx=5, pady=2)
 
         # Linha 2
         ttk.Label(self.info_frame, text="Data:", font=("", 9, "bold")).grid(row=2, column=0, sticky="e", padx=5, pady=2)
-        ttk.Label(self.info_frame, text=self.receita[5]).grid(row=2, column=1, sticky="w", padx=5, pady=2)
+        self.data_label = ttk.Label(self.info_frame, text=self.receita[5])
+        self.data_label.grid(row=2, column=1, sticky="w", padx=5, pady=2)
 
         # --- Frame de Tarefas ---
         self.tarefas_frame = ttk.LabelFrame(self.popup, text="Tarefas Associadas")
@@ -133,8 +139,20 @@ class ViewReceita:
             
             self.tree.insert("", "end", values=(t_id, qtd, nome, valor_fmt, obs))
 
+    def update_info_labels(self):
+        self.cliente_label.config(text=self.receita[1])
+        self.oficina_label.config(text=self.receita[2])
+        self.motor_label.config(text=self.receita[3])
+        self.placa_label.config(text=self.receita[4])
+        self.data_label.config(text=self.receita[5])
+
     def edit_receita(self):
-        messagebox.showinfo("Em Breve", "Funcionalidade de edição de receita será implementada em breve.", parent=self.popup)
+        edit_app = EditReceitas(self.popup, self.receita)
+        self.popup.wait_window(edit_app.popup)
+        
+        # Recarrega dados
+        self.receita = get_receita_by_id(self.receita_id)
+        self.update_info_labels()
 
     def add_tarefa(self):
         # Abre a janela de adicionar tarefas
