@@ -12,7 +12,17 @@ class MainApp:
         """Cria a aplicação principal."""
         self.root = root
         self.root.title("Gerenciador de Receitas")
-        self.root.geometry("1024x600")
+        
+        # Centralizar a janela na tela
+        window_width = 1024
+        window_height = 600
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+        
+        center_x = int(screen_width/2 - window_width/2)
+        center_y = int(screen_height/2 - window_height/2)
+        
+        self.root.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
 
         self.container = ttk.Frame(root)
         self.container.pack(fill="both", expand=True, padx=10, pady=10)
