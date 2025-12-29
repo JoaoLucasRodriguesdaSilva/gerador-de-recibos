@@ -10,7 +10,8 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 
 # Adiciona o diretório raiz ao path se necessário para importação do database
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from database.receita_tarefa import get_valor_total_from_receita
+from database.receita_tarefa import get_valor_total_from_receita, get_tarefas_from_receita
+from database.receitas import get_receita_by_id
 
 def format_currency(value: float) -> str:
     """Formata um valor float para o padrão monetário brasileiro (R$ X.XXX,XX)."""
@@ -27,9 +28,36 @@ def get_custom_styles():
         'garantia': ParagraphStyle(name='Garantia', parent=styles['Normal'], fontSize=9, fontName='Helvetica-Oblique')
     }
 
-def gerar_pdf_orcamento(dados_receita: Dict[str, Any], dados_tarefas: List[Dict[str, Any]], nome_arquivo: str):
-    """Gera o PDF do orçamento com base nos dados fornecidos."""
+def gerar_pdf_orcamento(receita_id: int, nome_arquivo: str):
+    """Gera o PDF do orçamento buscando os dados no banco de dados pelo ID da receita."""
     
+    # Busca dados da receita no banco
+    receita_tuple = get_receita_by_id(receita_id)
+    if not receita_tuple:
+        print(f"Erro: Receita ID {receita_id} não encontrada.")
+        return
+
+    # Mapeia tupla para dicionário (id, cliente, oficina, motor_cabecote, placa, data)
+    dados_receita = {
+        'cliente': receita_tuple[1],
+        'oficina': receita_tuple[2],
+        'motor_cabecote': receita_tuple[3],
+        'placa': receita_tuple[4],
+        'data': receita_tuple[5]
+    }
+
+    # Busca tarefas da receita no banco
+    tarefas_tuples = get_tarefas_from_receita(receita_id)
+    # Mapeia tuplas para lista de dicionários (id, nome, quantidade, valor, observacoes)
+    dados_tarefas = []
+    for t in tarefas_tuples:
+        dados_tarefas.append({
+            'descricao': t[1],
+            'quantidade': t[2],
+            'valor': t[3],
+            'observacao': t[4]
+        })
+
     # Configuração do Documento
     margem_esq = 30
     margem_dir = 30
@@ -117,8 +145,7 @@ def gerar_pdf_orcamento(dados_receita: Dict[str, Any], dados_tarefas: List[Dict[
     dados_itens_tabela = [cabecalho_itens]
     
     # Cálculo do Total
-    receita_id = dados_receita.get('id')
-    total_geral = get_valor_total_from_receita(receita_id) if receita_id else 0.0
+    total_geral = get_valor_total_from_receita(receita_id)
 
     for item in dados_tarefas:
         qtd = str(item.get('quantidade', ''))
@@ -131,9 +158,6 @@ def gerar_pdf_orcamento(dados_receita: Dict[str, Any], dados_tarefas: List[Dict[
         except (ValueError, TypeError):
             valor_float = 0.0
             
-        if not receita_id:
-            total_geral += valor_float
-
         dados_itens_tabela.append([qtd, tarefa, format_currency(valor_float), obs])
 
     if len(dados_itens_tabela) == 1:

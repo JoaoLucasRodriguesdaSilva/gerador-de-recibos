@@ -227,24 +227,6 @@ class ReceitasTarefas:
 
     def gerar_pdf_recibo(self):
         """Coleta os dados e chama o gerador de PDF."""
-        receita_dict = {
-            "id": self.receita_id,
-            "cliente": self.receita[1],
-            "oficina": self.receita[2],
-            "motor_cabecote": self.receita[3],
-            "placa": self.receita[4],
-            "data": self.receita[5]
-        }
-        
-        tarefas_list = []
-        for item in self.tarefas_associadas:
-            tarefas_list.append({
-                "descricao": item[0],
-                "quantidade": item[1],
-                "valor": item[2],
-                "observacao": item[3]
-            })
-            
         # Define o caminho para salvar o PDF na pasta 'receitas' na raiz do projeto
         recibos_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../receitas'))
         os.makedirs(recibos_dir, exist_ok=True)
@@ -252,7 +234,7 @@ class ReceitasTarefas:
         output_file = os.path.join(recibos_dir, f"recibo_{self.receita_id}.pdf")
         
         try:
-            gerar_pdf_orcamento(receita_dict, tarefas_list, output_file)
+            gerar_pdf_orcamento(self.receita_id, output_file)
             print(f"PDF gerado em: {output_file}")
         except Exception as e:
             print(f"Erro ao gerar PDF: {e}")
