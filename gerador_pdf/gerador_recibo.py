@@ -3,6 +3,12 @@ from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+import sys
+import os
+
+# Adiciona o diretório raiz ao path se necessário para importação do database
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from database.receita_tarefa import get_valor_total_from_receita
 
 def gerar_pdf_orcamento(dados_receita, dados_tarefas, nome_arquivo):
     filename = nome_arquivo
@@ -120,7 +126,13 @@ def gerar_pdf_orcamento(dados_receita, dados_tarefas, nome_arquivo):
     cabecalho = ["QTD", "TAREFA", "VALORES (R$)", "OBSERVAÇÕES"]
     
     dados_itens = []
-    total_geral = 0.0
+    
+    # Obtém o total diretamente do banco de dados se o ID estiver disponível
+    receita_id = dados_receita.get('id')
+    if receita_id:
+        total_geral = get_valor_total_from_receita(receita_id)
+    else:
+        total_geral = 0.0
 
     for item in dados_tarefas:
         qtd = str(item.get('quantidade', ''))
@@ -133,8 +145,9 @@ def gerar_pdf_orcamento(dados_receita, dados_tarefas, nome_arquivo):
         except (ValueError, TypeError):
             valor_float = 0.0
             
-        # Calcula total
-        total_geral += valor_float
+        # Se não tiver ID (teste local), calcula manualmente
+        if not receita_id:
+            total_geral += valor_float
 
         valor_formatado = f"{valor_float:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
         dados_itens.append([qtd, tarefa, valor_formatado, obs])

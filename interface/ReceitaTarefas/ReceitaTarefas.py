@@ -228,6 +228,7 @@ class ReceitasTarefas:
     def gerar_pdf_recibo(self):
         """Coleta os dados e chama o gerador de PDF."""
         receita_dict = {
+            "id": self.receita_id,
             "cliente": self.receita[1],
             "oficina": self.receita[2],
             "motor_cabecote": self.receita[3],
