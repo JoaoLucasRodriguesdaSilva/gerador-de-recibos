@@ -1,4 +1,4 @@
-#Este arquivo inicializa o banco de dados
+#Este arquivo inicializa o banco de dados e popula com tarefas padrão
 import sqlite3
 import os
 
@@ -17,10 +17,11 @@ def connect_db():
     return conn
 
 def create_table():
-    """Cria a tabela de recibos se ela não existir."""
+    """Cria as tabelas e insere dados iniciais se necessário."""
     conn = connect_db()
     cursor = conn.cursor()
 
+    # Tabela de Recibos (Cabeçalho do Orçamento)
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS receitas (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -32,13 +33,15 @@ def create_table():
         )
     ''')
 
+    # Tabela de Tarefas (Catálogo de serviços disponíveis)
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS tarefas (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nome TEXT NOT NULL
+            nome TEXT NOT NULL UNIQUE
         )
     ''')
 
+    # Tabela de Ligação (Itens do Orçamento: qual receita tem qual tarefa)
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS receita_tarefa (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -52,10 +55,65 @@ def create_table():
         )
     ''')
 
+    # --- Popula a tabela de tarefas com os dados do PDF ---
+    tarefas_padrao = [
+        "Mão de Obra",
+        "Comando de Válvulas",
+        "Recup. e Retíf. de Cabeçote",
+        "Soldar Cabeçote",
+        "Guias de Válvulas",
+        "Plainar",
+        "Esmerilhar Cabeçote",
+        "Trocar Retentores",
+        "Limpeza Química",
+        "Selo d'Água do Cabeçote",
+        "Teste de Trinca",
+        "Calibragem",
+        "Recuperação",
+        "Retent. Comand. Válvulas",
+        "Venda de Comando de Valv.",
+        "Extração",
+        "Bucha 14",
+        "Helicoide de 08",
+        "Válv. Escape",
+        "Válv. Admissão",
+        "Trocar Sedes de Valvulas",
+        "Sede sob. Medida",
+        "Encamisar Bloco",
+        "Brunir Camisas Bloco",
+        "Venda de Virabrequim",
+        "Ret. Bloco",
+        "Ret. Virabrequim",
+        "Retificar Ferro de Bielas",
+        "Plainar Bloco",
+        "Teste Planicidade do Bloco",
+        "Brz. Chumaceira",
+        "Brz. de Bielas",
+        "Bucha do Comando Interm.",
+        "Montar Pistão",
+        "Descarbonização",
+        "Jogo de pistão",
+        "Recuperação no bloco"
+    ]
+
+    # Verifica se já existem tarefas cadastradas para não duplicar
+    cursor.execute('SELECT count(*) FROM tarefas')
+    count = cursor.fetchone()[0]
+
+    if count == 0:
+        print("Populando tabela 'tarefas' com itens padrão do recibo...")
+        for tarefa in tarefas_padrao:
+            try:
+                cursor.execute('INSERT INTO tarefas (nome) VALUES (?)', (tarefa,))
+            except sqlite3.IntegrityError:
+                pass # Ignora se já existir (dupla segurança)
+    else:
+        print(f"Tabela 'tarefas' já contém {count} itens. Nenhuma inserção realizada.")
+
     cursor.close()
     conn.commit()
     conn.close()
 
 def criar_db():
     create_table()
-    print(f"Banco de dados '{get_db_path()}' e tabela 'receitas' verificados/criados com sucesso.")
+    print(f"Banco de dados '{get_db_path()}' verificado com sucesso.")
