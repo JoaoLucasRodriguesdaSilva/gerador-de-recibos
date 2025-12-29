@@ -235,7 +235,14 @@ class ReceitasTarefas:
         recibos_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../receitas'))
         os.makedirs(recibos_dir, exist_ok=True)
         
-        output_file = os.path.join(recibos_dir, f"recibo_{self.receita_id}.pdf")
+        # Formata o nome do arquivo: Cliente_Placa_Data.pdf
+        # self.receita = (id, cliente, oficina, motor, placa, data)
+        cliente = str(self.receita[1]).strip().replace(" ", "_")
+        placa = str(self.receita[4]).strip().replace(" ", "_")
+        data = str(self.receita[5]).strip().replace("/", "-")
+        
+        filename = f"{cliente}_{placa}_{data}.pdf"
+        output_file = os.path.join(recibos_dir, filename)
         
         try:
             gerar_pdf_orcamento(self.receita_id, output_file)
