@@ -1,106 +1,209 @@
-from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 
-def create_pdf(receita, tarefas, output_file="recibo.pdf"):
-    """
-    Gera um PDF de recibo com base nos dados da receita e tarefas fornecidos usando ReportLab.
+def gerar_pdf_orcamento(dados_receita, dados_tarefas, nome_arquivo):
+    filename = nome_arquivo
+    # Margens definidas
+    margem_esq = 30
+    margem_dir = 30
+    doc = SimpleDocTemplate(filename, pagesize=A4, rightMargin=margem_dir, leftMargin=margem_esq, topMargin=30, bottomMargin=30)
+    story = []
     
-    Args:
-        receita (dict): Dicionário contendo dados da receita (cliente, data, oficina, etc).
-        tarefas (list): Lista de dicionários, cada um representando uma tarefa (descricao, quantidade, valor).
-        output_file (str): Caminho para salvar o arquivo PDF gerado.
-    """
+    # Largura útil da página para cálculos de tabela
+    largura_util = A4[0] - margem_esq - margem_dir
     
-    doc = SimpleDocTemplate(output_file, pagesize=A4)
-    elements = []
     styles = getSampleStyleSheet()
     
-    # Estilos personalizados
-    title_style = styles['Heading1']
-    title_style.alignment = 1 # Center
+    # --- Estilos Personalizados ---
+    # Título principal (texto laranja)
+    style_efraim = ParagraphStyle(name='Titulo', parent=styles['Title'], fontSize=18, alignment=TA_CENTER, spaceAfter=6, textColor=colors.orange)
     
-    normal_style = styles['Normal']
+    # Subtítulos
+    style_subtitulo = ParagraphStyle(name='Subtitulo', parent=styles['Normal'], fontSize=10, alignment=TA_CENTER, leading=12, textColor=colors.black)
     
-    # Cabeçalho
-    elements.append(Paragraph("Recibo de Serviços", title_style))
-    elements.append(Spacer(1, 20))
+    style_destaque = ParagraphStyle(name='Destaque', parent=styles['Heading2'], fontSize=14, alignment=TA_CENTER, spaceBefore=15, spaceAfter=10)
+
+    style_normal = ParagraphStyle(name='Normal', parent=styles['Normal'], fontSize=10, leading=12)
+    style_negrito = ParagraphStyle(name='Negrito', parent=styles['Normal'], fontSize=10, leading=12, fontName='Helvetica-Bold')
+
+    # --- CABEÇALHO ---
+    # Criamos os parágrafos
+    p_efraim = Paragraph("<b>EFRAIM RETÍFICA DE MOTORES</b>", style_efraim)
     
-    # Informações da Receita
-    info_data = [
-        [f"Data: {receita.get('data', '')}"],
-        [f"Cliente: {receita.get('cliente', '')}"],
-        [f"Oficina: {receita.get('oficina', '')}"],
-        [f"Motor/Cabeçote: {receita.get('motor_cabecote', '')}"],
-        [f"Placa: {receita.get('placa', '')}"]
+    # Agrupamos os parágrafos do subtítulo
+    p_localizacao = Paragraph("Av. Dom Almeida Lustosa, 1583 - Parque Albano - Caucaia - Ceará", style_subtitulo)
+    p_servicos = Paragraph("Venda - Troca - Recuperação de Cabeçotes e Motores - Nacionais ou Importados", style_subtitulo)
+    p_contato = Paragraph("<b>CNPJ: 21.550.087/0001-40 | Contato: (85) 9.8593-2248</b>", style_subtitulo)
+    
+    # Lista de flowables para a célula inferior (endereço/contato)
+    bloco_subtitulo = [p_localizacao, p_servicos, p_contato]
+
+    # --- Linha Orçamento e Data ---
+    # Parágrafos
+    p_orcamento = Paragraph("ORÇAMENTO", style_destaque)
+    p_data = Paragraph(f"Data: {dados_receita.get('data', '')}", style_destaque)
+
+    # Tabela Aninhada para alinhamento horizontal perfeito:
+    # [ Espaço Vazio | Orçamento (Centro) | Data (Direita) ]
+    # Usamos larguras iguais nas laterais para garantir que o "Orçamento" fique exatamente no centro da página
+    largura_lateral = 130
+    largura_centro = largura_util - (2 * largura_lateral)
+    
+    t_linha_orcamento = Table(
+        [[None, p_orcamento, p_data]], 
+        colWidths=[largura_lateral, largura_centro, largura_lateral]
+    )
+    t_linha_orcamento.setStyle(TableStyle([
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        ('LEFTPADDING', (0,0), (-1,-1), 0),
+        ('RIGHTPADDING', (0,0), (-1,-1), 0),
+        ('TOPPADDING', (0,0), (-1,-1), 0),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 0),
+    ]))
+
+    # --- Dados do Cliente ---
+    # Largura dividida por 2 para as duas colunas
+    p_cliente = Paragraph(f"<b>Cliente:</b> {dados_receita.get('cliente', '')}", style_normal)
+    p_oficina = Paragraph(f"<b>Oficina:</b> {dados_receita.get('oficina', '')}", style_normal)
+    p_motor = Paragraph(f"<b>Motor/Cabeçote:</b> {dados_receita.get('motor_cabecote', '')}", style_normal)
+    p_placa = Paragraph(f"<b>Placa:</b> {dados_receita.get('placa', '')}", style_normal)
+
+    largura_coluna = largura_util / 2
+    t_dados_cliente = Table(
+        [
+            [p_cliente, p_oficina],
+            [p_motor, p_placa]
+        ], colWidths = [largura_coluna, largura_coluna]
+    )
+
+    t_dados_cliente.setStyle(TableStyle([
+        ('LEFTPADDING', (0,0), (-1,-1), 3),
+        ('RIGHTPADDING', (0,0), (-1,-1), 0),
+        ('TOPPADDING', (0,0), (-1,-1), 0),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 0),
+    ]))
+
+    # Estrutura da tabela principal: Linha 1 = Título, Linha 2 = Subtítulos, Linha 3 = Tabela Aninhada (Orcamento/Data)
+    dados_cabecalho = [
+        [p_efraim],
+        [bloco_subtitulo],
+        [t_linha_orcamento],
+        [t_dados_cliente]
     ]
+
+    # Criamos a tabela ocupando toda a largura útil
+    tabela = Table(dados_cabecalho, colWidths=[largura_util])
+
+    # Estilizamos a tabela para ter fundo branco e borda
+    tabela.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 1), colors.white),   
+        ('BACKGROUND', (0, 2), (-1, 2), colors.bisque),   
+        ('BOX', (0, 0), (-1, -1), 1, colors.black),       
+        ('INNERGRID', (0, 0), (-1, -1), 1.0, colors.black),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),            
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),           
+        ('TOPPADDING', (0, 0), (-1, -1), 5),              
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+        ('LEFTPADDING', (0, 0), (-1, -1), 5),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 5),
+    ]))
+
+    story.append(tabela)
+    # -----------------------------------
+
+    story.append(Spacer(1, 10))
+
+    # --- Tabela de Itens ---
+    cabecalho = ["QTD", "TAREFA", "VALORES (R$)", "OBSERVAÇÕES"]
     
-    # Adiciona informações como parágrafos para melhor formatação
-    for info in info_data:
-        elements.append(Paragraph(f"<b>{info[0].split(':')[0]}:</b> {info[0].split(':')[1]}", normal_style))
-        elements.append(Spacer(1, 5))
+    dados_itens = []
+    total_geral = 0.0
+
+    for item in dados_tarefas:
+        qtd = str(item.get('quantidade', ''))
+        tarefa = item.get('descricao', '')
+        valor_raw = item.get('valor', 0)
+        obs = item.get('observacao', '')
         
-    elements.append(Spacer(1, 20))
-    elements.append(Paragraph("Detalhes dos serviços prestados:", styles['Heading3']))
-    elements.append(Spacer(1, 10))
+        try:
+            valor_float = float(valor_raw)
+        except (ValueError, TypeError):
+            valor_float = 0.0
+            
+        # Calcula total
+        total_geral += valor_float
+
+        valor_formatado = f"{valor_float:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        dados_itens.append([qtd, tarefa, valor_formatado, obs])
+
+    if not dados_itens:
+        dados_itens.append(["", "", "0,00", ""])
+
+    tabela_dados = [cabecalho] + dados_itens
+
+    # Ajuste fino das colunas
+    col_qtd = 35
+    col_valor = 80
+    col_obs = 140
+    col_desc = largura_util - col_qtd - col_valor - col_obs # Calcula o resto para a descrição
     
-    # Tabela de Tarefas
-    table_data = [['Descrição', 'Qtd', 'Valor Unit.', 'Total']]
-    
-    total_geral = 0
-    for t in tarefas:
-        total_item = t['quantidade'] * t['valor']
-        total_geral += total_item
-        
-        valor_unit_fmt = f"R$ {t['valor']:.2f}".replace('.', ',')
-        total_item_fmt = f"R$ {total_item:.2f}".replace('.', ',')
-        
-        table_data.append([
-            t['descricao'],
-            str(t['quantidade']),
-            valor_unit_fmt,
-            total_item_fmt
-        ])
-    
-    # Estilo da Tabela
-    table = Table(table_data, colWidths=[250, 50, 80, 80])
-    table.setStyle(TableStyle([
+    tabela = Table(tabela_dados, colWidths=[col_qtd, col_desc, col_valor, col_obs])
+
+    estilo_tabela = TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('ALIGN', (1, 0), (-1, -1), 'CENTER'), # Quantidade e Valores centralizados/direita
+        ('ALIGN', (0, 0), (0, -1), 'CENTER'),
+        ('ALIGN', (2, 0), (2, -1), 'RIGHT'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-        ('BACKGROUND', (0, 1), (-1, -1), colors.white),
-        ('GRID', (0, 0), (-1, -1), 1, colors.black),
-    ]))
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+    ])
     
-    elements.append(table)
-    elements.append(Spacer(1, 20))
-    
-    # Total Geral
-    total_geral_fmt = f"R$ {total_geral:.2f}".replace('.', ',')
-    elements.append(Paragraph(f"<b>Total a Pagar: {total_geral_fmt}</b>", styles['Heading2']))
-    
-    # Gerar PDF
-    doc.build(elements)
-    print(f"PDF gerado com sucesso: {output_file}")
+    for i, row in enumerate(dados_itens):
+        try:
+            val_str = row[2].replace('.', '').replace(',', '.')
+            val = float(val_str)
+            if val > 0:
+                estilo_tabela.add('FONTNAME', (0, i+1), (-1, i+1), 'Helvetica-Bold')
+        except:
+            pass
 
-if __name__ == "__main__":
-    # Dados de exemplo para teste
-    receita_exemplo = {
-        "cliente": "João Silva",
-        "data": "25/12/2025",
-        "oficina": "Oficina do Pedro",
-        "motor_cabecote": "AP 1.8",
-        "placa": "ABC-1234"
-    }
-    
-    tarefas_exemplo = [
-        {"descricao": "Troca de Óleo", "quantidade": 1, "valor": 150.00},
-        {"descricao": "Alinhamento", "quantidade": 1, "valor": 80.00},
-        {"descricao": "Balanceamento", "quantidade": 4, "valor": 20.00}
+    tabela.setStyle(estilo_tabela)
+    story.append(tabela)
+
+    story.append(Spacer(1, 10))
+
+    # --- Total Geral ---
+    total_formatado = f"R$ {total_geral:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    dados_total = [
+        ["TOTAL GERAL:", total_formatado]
     ]
+    # Alinha a tabela de total à direita usando a largura útil
+    largura_total_val = 100
+    largura_total_desc = largura_util - largura_total_val
     
-    create_pdf(receita_exemplo, tarefas_exemplo, "exemplo_recibo_reportlab.pdf")
+    tabela_total = Table(dados_total, colWidths=[largura_total_desc, largura_total_val])
+    tabela_total.setStyle(TableStyle([
+        ('ALIGN', (0,0), (0,0), 'RIGHT'),
+        ('ALIGN', (1,0), (1,0), 'RIGHT'),
+        ('FONTNAME', (0,0), (-1,-1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0,0), (-1,-1), 12),
+        ('topPadding', (0,0), (-1,-1), 5),
+        ('BOX', (0,0), (-1,-1), 1, colors.black),
+        ('BACKGROUND', (0,0), (-1,-1), colors.whitesmoke)
+    ]))
+    story.append(tabela_total)
+
+    story.append(Spacer(1, 20))
+
+    # --- Rodapé ---
+    texto_garantia = "* Garantia do serviço válida por 90 dias corridos."
+    story.append(Paragraph(texto_garantia, ParagraphStyle(name='Garantia', parent=styles['Normal'], fontSize=9, fontName='Helvetica-Oblique')))
+
+    doc.build(story)
+    print(f"PDF '{filename}' gerado com sucesso!")

@@ -9,7 +9,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')
 from database.tarefas import get_all_tarefas
 from database.receita_tarefa import add_tarefa_to_receita
 from database.receitas import add_receita
-from gerador_pdf.gerador_recibo import create_pdf
+from gerador_pdf.gerador_recibo import gerar_pdf_orcamento
 
 class ReceitasTarefas:
     def __init__(self, parent, receita):
@@ -240,17 +240,18 @@ class ReceitasTarefas:
             tarefas_list.append({
                 "descricao": item[0],
                 "quantidade": item[1],
-                "valor": item[2]
+                "valor": item[2],
+                "observacao": item[3]
             })
             
-        # Define o caminho para salvar o PDF na pasta 'recibos' na raiz do projeto
-        recibos_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../recibos'))
+        # Define o caminho para salvar o PDF na pasta 'receitas' na raiz do projeto
+        recibos_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../receitas'))
         os.makedirs(recibos_dir, exist_ok=True)
         
         output_file = os.path.join(recibos_dir, f"recibo_{self.receita_id}.pdf")
         
         try:
-            create_pdf(receita_dict, tarefas_list, output_file)
+            gerar_pdf_orcamento(receita_dict, tarefas_list, output_file)
             print(f"PDF gerado em: {output_file}")
         except Exception as e:
             print(f"Erro ao gerar PDF: {e}")
