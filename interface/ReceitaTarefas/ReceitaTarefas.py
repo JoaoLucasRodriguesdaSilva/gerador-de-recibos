@@ -1,7 +1,8 @@
-from tkinter import ttk, messagebox
 import tkinter as tk
+from tkinter import ttk, messagebox
 import sys
 import os
+from typing import List, Tuple, Optional, Dict, Any
 
 # Adiciona o diretório raiz do projeto ao sys.path para encontrar os módulos do banco de dados
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
@@ -12,159 +13,172 @@ from database.receitas import add_receita
 from gerador_pdf.gerador_recibo import gerar_pdf_orcamento
 
 class ReceitasTarefas:
-    def __init__(self, parent, receita):
+    """Janela para associar tarefas a uma receita e gerar o recibo."""
+
+    def __init__(self, parent: tk.Widget, receita: Tuple[Optional[int], str, str, str, str, str]):
         self.parent = parent
         self.receita = receita
         self.receita_id = receita[0]
 
-        # Carrega tarefas e cria um mapa {Nome: ID} para salvar corretamente depois
-        # O banco retorna tuplas (id, nome), então acessamos por índice
-        tarefas_db = get_all_tarefas()
-        self.tarefas_map = {t[1]: t[0] for t in tarefas_db}
-        self.todas_tarefas = list(self.tarefas_map.keys())
+        self.tarefas_map: Dict[str, int] = {}
+        self.todas_tarefas: List[str] = []
+        self.tarefas_associadas: List[List[Any]] = []
 
-        self.create_widgets()
-        self.tarefas_associadas = []
+        self._load_tarefas()
+        self._create_widgets()
     
-    def create_widgets(self):
-        # Gerar popup
+    def _load_tarefas(self):
+        """Carrega as tarefas do banco de dados."""
+        try:
+            tarefas_db = get_all_tarefas()
+            self.tarefas_map = {t[1]: t[0] for t in tarefas_db}
+            self.todas_tarefas = list(self.tarefas_map.keys())
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao carregar tarefas: {e}")
+            self.todas_tarefas = []
+
+    def _create_widgets(self):
+        """Inicializa a interface gráfica."""
         self.popup = tk.Toplevel(self.parent)
-        self.popup.title("Adicionar Receita")
+        self.popup.title("Adicionar Tarefas")
         self.popup.transient(self.parent)
+        self.popup.resizable(False, False)
 
-        # --- Frame de Informações da Receita ---
-        self.receita_info_frame = ttk.LabelFrame(self.popup, text="Informações da Receita")
-        self.receita_info_frame.pack(fill="x", padx=5, pady=5, side="top")
+        self._create_info_frame()
+        self._create_input_frame()
+        self._create_list_frame()
+        self._create_buttons_frame()
+        
+        self._center_window()
+        self.popup.grab_set()
 
-        # Acessando por índice pois o retorno é uma tupla: (id, cliente, oficina, motor, placa, data)
-        self.label_cliente = ttk.Label(self.receita_info_frame, text=f"Cliente: {self.receita[1]}")
-        self.label_cliente.grid(row=0, column=0, padx=5, pady=2, sticky="w")
+    def _create_info_frame(self):
+        """Cria o frame com informações da receita."""
+        frame = ttk.LabelFrame(self.popup, text="Informações da Receita")
+        frame.pack(fill="x", padx=5, pady=5, side="top")
 
-        self.label_oficina = ttk.Label(self.receita_info_frame, text=f"Oficina: {self.receita[2]}")
-        self.label_oficina.grid(row=1, column=0, padx=5, pady=2, sticky="w")
+        # Labels com grid
+        labels = [
+            (f"Cliente: {self.receita[1]}", 0, 0),
+            (f"Motor/Cabeçote: {self.receita[3]}", 0, 1),
+            (f"Oficina: {self.receita[2]}", 1, 0),
+            (f"Placa: {self.receita[4]}", 1, 1),
+            (f"Data: {self.receita[5]}", 2, 0),
+        ]
 
-        self.label_motor_cabecote = ttk.Label(self.receita_info_frame, text=f"Motor/Cabeçote: {self.receita[3]}")
-        self.label_motor_cabecote.grid(row=0, column=1, padx=5, pady=2, sticky="w")
+        for text, row, col in labels:
+            ttk.Label(frame, text=text).grid(row=row, column=col, padx=5, pady=2, sticky="w")
 
-        self.label_placa = ttk.Label(self.receita_info_frame, text=f"Placa: {self.receita[4]}")
-        self.label_placa.grid(row=1, column=1, padx=5, pady=2, sticky="w")
-
-        self.label_data = ttk.Label(self.receita_info_frame, text=f"Data: {self.receita[5]}")
-        self.label_data.grid(row=2, column=0, padx=5, pady=2, sticky="w")
-
+    def _create_input_frame(self):
+        """Cria o frame de entrada de tarefas."""
         self.atribuir_tarefa_frame = ttk.LabelFrame(self.popup, text="Atribuir Tarefa")
         self.atribuir_tarefa_frame.pack(fill="x", padx=5, pady=5, side="top")
 
-        self.label_quantidade = ttk.Label(self.atribuir_tarefa_frame, text="Quantidade:")
-        self.label_quantidade.grid(row=0, column=0, padx=5, pady=2, sticky="w")
+        # Linha 1
+        ttk.Label(self.atribuir_tarefa_frame, text="Quantidade:").grid(row=0, column=0, padx=5, pady=2, sticky="w")
         self.entry_quantidade = ttk.Entry(self.atribuir_tarefa_frame)
         self.entry_quantidade.grid(row=0, column=1, padx=5, pady=2, sticky="w")
 
-        self.label_tarefa = ttk.Label(self.atribuir_tarefa_frame, text="Tarefa:")
-        self.label_tarefa.grid(row=0, column=2, padx=5, pady=2, sticky="w")
-        
-        # Substituindo Combobox por Entry + Listbox customizada
+        ttk.Label(self.atribuir_tarefa_frame, text="Tarefa:").grid(row=0, column=2, padx=5, pady=2, sticky="w")
         self.entry_tarefa = ttk.Entry(self.atribuir_tarefa_frame)
         self.entry_tarefa.grid(row=0, column=3, padx=5, pady=2, sticky="w")
+        
+        # Bindings para autocomplete
         self.entry_tarefa.bind("<KeyRelease>", self.on_tarefa_keyrelease)
         self.entry_tarefa.bind("<Down>", self.move_selection_down)
         self.entry_tarefa.bind("<Up>", self.move_selection_up)
         self.entry_tarefa.bind("<Return>", self.confirm_selection)
         self.entry_tarefa.bind("<FocusOut>", self.on_focus_out)
 
-        # Listbox para sugestões (inicialmente escondida)
-        # Mudamos o pai para self.popup para evitar que a lista seja cortada pelo frame
+        # Listbox de sugestões
         self.lista_sugestoes = tk.Listbox(self.popup, height=5)
         self.lista_sugestoes.bind("<ButtonRelease-1>", self.on_sugestao_select)
 
-        self.label_valor = ttk.Label(self.atribuir_tarefa_frame, text="Valor:")
-        self.label_valor.grid(row=1, column=0, padx=5, pady=2, sticky="w")
+        # Linha 2
+        ttk.Label(self.atribuir_tarefa_frame, text="Valor:").grid(row=1, column=0, padx=5, pady=2, sticky="w")
         self.entry_valor = ttk.Entry(self.atribuir_tarefa_frame)
         self.entry_valor.grid(row=1, column=1, padx=5, pady=2, sticky="w")
 
-        self.label_observacoes = ttk.Label(self.atribuir_tarefa_frame, text="Observações:")
-        self.label_observacoes.grid(row=1, column=2, padx=5, pady=2, sticky="w")
+        ttk.Label(self.atribuir_tarefa_frame, text="Observações:").grid(row=1, column=2, padx=5, pady=2, sticky="w")
         self.entry_observacoes = ttk.Entry(self.atribuir_tarefa_frame)
         self.entry_observacoes.grid(row=1, column=3, padx=5, pady=2, sticky="w")
 
-        self.tarefas_associadas_frame = ttk.LabelFrame(self.popup, text="Tarefas Associadas")
-        self.tarefas_associadas_frame.pack(fill="both", expand=True, padx=5, pady=5)
+    def _create_list_frame(self):
+        """Cria o frame com a lista de tarefas associadas."""
+        frame = ttk.LabelFrame(self.popup, text="Tarefas Associadas")
+        frame.pack(fill="both", expand=True, padx=5, pady=5)
 
-        self.tree = ttk.Treeview(self.tarefas_associadas_frame, columns=("nome", "quantidade", "valor", "observacoes"), show="headings")
+        columns = ("nome", "quantidade", "valor", "observacoes")
+        self.tree = ttk.Treeview(frame, columns=columns, show="headings")
         
-        scrollbar = ttk.Scrollbar(self.tarefas_associadas_frame, orient="vertical", command=self.tree.yview)
-        scrollbar.pack(side="right", fill="y")
+        scrollbar = ttk.Scrollbar(frame, orient="vertical", command=self.tree.yview)
+        self.tree.configure(yscroll=scrollbar.set)
         
         self.tree.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
 
-        self.tree.heading("quantidade", text="Quantidade")
-        self.tree.heading("nome", text="Tarefa")
-        self.tree.heading("valor", text="Valor")
-        self.tree.heading("observacoes", text="Observações")
+        headers = {
+            "quantidade": ("Quantidade", 20, "center"),
+            "nome": ("Tarefa", 150, "w"),
+            "valor": ("Valor", 20, "center"),
+            "observacoes": ("Observações", 100, "w")
+        }
 
-        self.tree.column("quantidade", width=20, anchor="center")
-        self.tree.column("nome", width=150, anchor="w")
-        self.tree.column("valor", width=20, anchor="center")
-        self.tree.column("observacoes", width=100, anchor="w")
+        for col, (text, width, anchor) in headers.items():
+            self.tree.heading(col, text=text)
+            self.tree.column(col, width=width, anchor=anchor)
 
-        self.tree.configure(yscroll=scrollbar.set)
+    def _create_buttons_frame(self):
+        """Cria o frame de botões de ação."""
+        frame = ttk.Frame(self.popup)
+        frame.pack(side="bottom", fill="x", padx=5, pady=5)
 
-        # Frame para botões
-        self.buttons_frame = ttk.Frame(self.popup)
-        self.buttons_frame.pack(side="bottom", fill="x", padx=5, pady=5)
+        ttk.Button(frame, text="Adicionar à Lista", command=self.associar_tarefa).pack(side="left", padx=5, expand=True, fill="x")
+        ttk.Button(frame, text="Remover da Lista", command=self.remover).pack(side="left", padx=5, expand=True, fill="x")
+        ttk.Button(frame, text="Salvar no Banco e Fechar", command=self.salvar_no_banco).pack(side="left", padx=5, expand=True, fill="x")
 
-        self.salvar_button = ttk.Button(self.buttons_frame, text="Adicionar à Lista", command=self.associar_tarefa)
-        self.salvar_button.pack(side="left", padx=5, expand=True, fill="x")
-
-        self.remover_button = ttk.Button(self.buttons_frame, text="Remover da Lista", command=self.remover)
-        self.remover_button.pack(side="left", padx=5, expand=True, fill="x")
-
-        self.btn_finalizar = ttk.Button(self.buttons_frame, text="Salvar no Banco e Fechar", command=self.salvar_no_banco)
-        self.btn_finalizar.pack(side="left", padx=5, expand=True, fill="x")
-
-        # Centraliza o popup na janela pai
+    def _center_window(self):
+        """Centraliza o popup na janela pai."""
         self.popup.update_idletasks()
+        width = self.popup.winfo_reqwidth()
+        height = self.popup.winfo_reqheight()
+        
         parent_x = self.parent.winfo_rootx()
         parent_y = self.parent.winfo_rooty()
         parent_width = self.parent.winfo_width()
         parent_height = self.parent.winfo_height()
-        popup_width = self.popup.winfo_width()
-        popup_height = self.popup.winfo_height()
-        x = parent_x + (parent_width // 2) - (popup_width // 2)
-        y = parent_y + (parent_height // 2) - (popup_height // 2)
-        self.popup.geometry(f'+{x}+{y}')
-
-        self.popup.grab_set()
+        
+        x = parent_x + (parent_width // 2) - (width // 2)
+        y = parent_y + (parent_height // 2) - (height // 2)
+        
+        self.popup.geometry(f"+{x}+{y}")
 
     def associar_tarefa(self):
         """Adiciona a tarefa à lista visual (não salva no banco ainda)."""
-        quantidade = self.entry_quantidade.get()
-        tarefa = self.entry_tarefa.get()
-        valor = self.entry_valor.get()
-        observacoes = self.entry_observacoes.get()
+        quantidade = self.entry_quantidade.get().strip()
+        tarefa = self.entry_tarefa.get().strip()
+        valor = self.entry_valor.get().strip()
+        observacoes = self.entry_observacoes.get().strip()
 
         if not all([quantidade, tarefa, valor]):
             messagebox.showwarning("Campo Vazio", "Campos obrigatórios devem ser preenchidos.", parent=self.popup)
             return
         
-        # Valida se a tarefa existe no banco
         if tarefa not in self.tarefas_map:
             messagebox.showerror("Tarefa Inválida", "A tarefa selecionada não existe no banco de dados. Selecione uma tarefa da lista.", parent=self.popup)
             return
         
-        # Validação de Quantidade e Valor
         try:
-            quantidade = int(quantidade)
-            if quantidade <= 0:
+            qtd_int = int(quantidade)
+            if qtd_int <= 0:
                 raise ValueError("Quantidade deve ser maior que zero.")
         except ValueError:
             messagebox.showerror("Erro de Validação", "Quantidade deve ser um número inteiro válido.", parent=self.popup)
             return
 
         try:
-            # Substitui vírgula por ponto para aceitar formato brasileiro
-            valor = float(valor.replace(',', '.'))
-            if valor < 0:
+            val_float = float(valor.replace(',', '.'))
+            if val_float < 0:
                 raise ValueError("Valor não pode ser negativo.")
         except ValueError:
             messagebox.showerror("Erro de Validação", "Valor deve ser um número válido (ex: 100.00 ou 100,00).", parent=self.popup)
@@ -173,18 +187,15 @@ class ReceitasTarefas:
         if not observacoes:
             observacoes = "N/D"
 
-        # Adiciona à lista interna
-        self.tarefas_associadas.append([tarefa, quantidade, valor, observacoes])
+        self.tarefas_associadas.append([tarefa, qtd_int, val_float, observacoes])
         self.update_list()
 
-        # Limpa os campos para facilitar a próxima inserção
+        # Limpa campos
         self.entry_quantidade.delete(0, 'end')
         self.entry_tarefa.delete(0, 'end')
         self.entry_valor.delete(0, 'end')
         self.entry_observacoes.delete(0, 'end')
         self.entry_quantidade.focus_set()
-        
-        # Esconde a lista de sugestões se estiver aberta
         self.lista_sugestoes.place_forget()
 
     def salvar_no_banco(self):
@@ -199,24 +210,18 @@ class ReceitasTarefas:
                 _, cliente, oficina, motor, placa, data_str = self.receita
                 self.receita_id = add_receita(cliente, oficina, motor, placa, data_str)
                 
-                # Atualiza a lista na janela principal se possível
                 if hasattr(self.parent, 'populate_receitas_list'):
                     self.parent.populate_receitas_list()
 
             for item in self.tarefas_associadas:
-                # item = [tarefa_nome, quantidade, valor, observacoes]
                 nome, qtd, val, obs = item
-                
-                # Busca o ID da tarefa pelo nome usando o mapa criado no __init__
                 tarefa_id = self.tarefas_map.get(nome)
                 
                 if tarefa_id:
                     add_tarefa_to_receita(self.receita_id, tarefa_id, qtd, val, obs)
                 else:
-                    # Caso raro onde o nome não existe no mapa (ex: digitado manualmente e não selecionado)
                     print(f"Aviso: Tarefa '{nome}' não encontrada no banco. Ignorada.")
             
-            # Gera o PDF do recibo
             self.gerar_pdf_recibo()
 
             messagebox.showinfo("Sucesso", f"Receita salva e PDF gerado (recibo_{self.receita_id}.pdf)!", parent=self.popup)
@@ -227,7 +232,6 @@ class ReceitasTarefas:
 
     def gerar_pdf_recibo(self):
         """Coleta os dados e chama o gerador de PDF."""
-        # Define o caminho para salvar o PDF na pasta 'receitas' na raiz do projeto
         recibos_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../receitas'))
         os.makedirs(recibos_dir, exist_ok=True)
         
@@ -238,22 +242,20 @@ class ReceitasTarefas:
             print(f"PDF gerado em: {output_file}")
         except Exception as e:
             print(f"Erro ao gerar PDF: {e}")
-            # Não impede o fluxo principal, apenas loga o erro (ou poderia mostrar um aviso)
             messagebox.showwarning("Aviso PDF", f"Receita salva, mas erro ao gerar PDF: {e}", parent=self.popup)
 
     def update_list(self):
+        """Atualiza a Treeview com as tarefas associadas."""
         for item in self.tree.get_children():
             self.tree.delete(item)
         for tarefa in self.tarefas_associadas:
-            # Cria uma cópia para exibição para formatar o valor como moeda
             display_values = list(tarefa)
-            # Formata o valor (índice 2)
             if isinstance(display_values[2], (int, float)):
                 display_values[2] = f"R$ {display_values[2]:.2f}".replace('.', ',')
-            
             self.tree.insert("", "end", values=display_values)
     
     def remover(self):
+        """Remove a tarefa selecionada da lista."""
         selected_item = self.tree.selection()
         if not selected_item:
             messagebox.showwarning("Nenhuma Seleção", "Por favor, selecione uma tarefa para deletar.")
@@ -261,7 +263,6 @@ class ReceitasTarefas:
 
         if messagebox.askyesno("Confirmar Deleção", "Você tem certeza que deseja remover esta tarefa da lista?"):
             try:
-                # Remove pelo índice para evitar problemas com tipos de dados (str vs float/int)
                 index = self.tree.index(selected_item[0])
                 del self.tarefas_associadas[index]
                 self.update_list()
@@ -270,26 +271,21 @@ class ReceitasTarefas:
 
     def on_tarefa_keyrelease(self, event):
         """Filtra e mostra as sugestões conforme o usuário digita."""
-        # Ignora teclas de navegação
         if event.keysym in ['Up', 'Down', 'Left', 'Right', 'Return', 'Escape', 'Tab']:
             return
 
         typed_text = self.entry_tarefa.get()
         
-        # Filtra as tarefas
         if not typed_text:
             filtered_list = self.todas_tarefas
         else:
             filtered_list = [tarefa for tarefa in self.todas_tarefas if typed_text.lower() in tarefa.lower()]
         
-        # Atualiza a Listbox
         self.lista_sugestoes.delete(0, tk.END)
         for item in filtered_list:
             self.lista_sugestoes.insert(tk.END, item)
             
-        # Posiciona e mostra a Listbox abaixo do Entry
         if filtered_list:
-            # Calcula a posição relativa à janela popup, pois a lista agora é filha do popup
             x = self.entry_tarefa.winfo_rootx() - self.popup.winfo_rootx()
             y = self.entry_tarefa.winfo_rooty() - self.popup.winfo_rooty() + self.entry_tarefa.winfo_height()
             w = self.entry_tarefa.winfo_width()
@@ -310,7 +306,7 @@ class ReceitasTarefas:
             self.entry_tarefa.focus_set()
 
     def move_selection_down(self, event):
-        """Move a seleção da lista para baixo sem tirar o foco do Entry."""
+        """Move a seleção da lista para baixo."""
         if self.lista_sugestoes.winfo_ismapped():
             current_selection = self.lista_sugestoes.curselection()
             if current_selection:
@@ -326,7 +322,7 @@ class ReceitasTarefas:
             return "break"
 
     def move_selection_up(self, event):
-        """Move a seleção da lista para cima sem tirar o foco do Entry."""
+        """Move a seleção da lista para cima."""
         if self.lista_sugestoes.winfo_ismapped():
             current_selection = self.lista_sugestoes.curselection()
             if current_selection:
@@ -339,7 +335,7 @@ class ReceitasTarefas:
             return "break"
 
     def confirm_selection(self, event):
-        """Confirma a seleção atual da lista ao pressionar Enter."""
+        """Confirma a seleção atual da lista."""
         if self.lista_sugestoes.winfo_ismapped():
             selection = self.lista_sugestoes.curselection()
             if selection:

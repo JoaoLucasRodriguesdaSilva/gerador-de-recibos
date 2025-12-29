@@ -78,9 +78,4 @@ class PopupReceita:
             "data": self.data_entry.get_entry_value().strip()
         }
 
-        # Validação simples
-        if not data["cliente"] or not data["oficina"]:
-             messagebox.showwarning("Campos Obrigatórios", "Por favor, preencha pelo menos Cliente e Oficina.", parent=self.popup)
-             return
-
         self.save_callback(data, self.popup)
