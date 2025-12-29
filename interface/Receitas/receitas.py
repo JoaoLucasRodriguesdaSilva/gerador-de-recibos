@@ -1,24 +1,29 @@
+import tkinter as tk
 from tkinter import ttk, messagebox
 import sys
 import os
+from typing import Dict, Any
 
 # Adiciona o diretório raiz do projeto ao sys.path para encontrar os módulos do banco de dados
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
-from database.receitas import add_receita, get_all_receitas, delete_receita
+from database.receitas import get_all_receitas, delete_receita
 from interface.Receitas.popup.PopupReceita import PopupReceita
 from interface.Tarefas.RegistroTarefas import RegistroTarefas
 from interface.ReceitaTarefas.ReceitaTarefas import ReceitasTarefas
 from interface.ViewReceitas.view_receitas import ViewReceita
 
 class ReceitasFrame(ttk.Frame):
-    def __init__(self, parent):
+    """Frame principal para gerenciamento e visualização de receitas."""
+
+    def __init__(self, parent: tk.Widget):
         super().__init__(parent)
         
         self.create_widgets()
         self.populate_receitas_list()
 
     def create_widgets(self):
+        """Cria os componentes da interface."""
         # --- Frame de Gerenciamento ---
         management_frame = ttk.LabelFrame(self, text="Gerenciar Receita")
         management_frame.pack(fill="x", padx=5, pady=5)
@@ -26,8 +31,10 @@ class ReceitasFrame(ttk.Frame):
         # --- Botões de Ação ---
         button_frame = ttk.Frame(management_frame)
         button_frame.pack(pady=5, padx=5, anchor="w")
-        ttk.Button(button_frame, text="Nova Receita", command=self.show_add_receita_popup).pack(side="left")
+        
+        ttk.Button(button_frame, text="Nova Receita", command=self.show_add_receita_popup).pack(side="left", padx=(0, 5))
         ttk.Button(button_frame, text="Tarefas Salvas", command=self.show_saved_tarefas_popup).pack(side="left")
+        ttk.Button(button_frame, text="Atualizar Lista", command=self.populate_receitas_list).pack(side="left", padx=(5, 0))
 
         # --- Frame da Lista de Receitas ---
         list_frame = ttk.LabelFrame(self, text="Receitas Cadastradas")
@@ -62,18 +69,28 @@ class ReceitasFrame(ttk.Frame):
         ttk.Button(list_button_frame, text="Deletar Selecionada", command=self.delete_selected_receita).pack(side="left")
 
     def populate_receitas_list(self):
+        """Busca as receitas no banco e popula a Treeview."""
         for item in self.tree.get_children():
             self.tree.delete(item)
-        for receita in get_all_receitas():
-            self.tree.insert("", "end", values=receita)
+            
+        try:
+            receitas = get_all_receitas()
+            for receita in receitas:
+                self.tree.insert("", "end", values=receita)
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao carregar receitas: {e}")
 
-    def save_receita(self, data, popup):
-        """Lógica para salvar a receita, chamada pelo popup."""
-        cliente = data["cliente"]
-        oficina = data["oficina"]
-        motor = data["motor"]
-        placa = data["placa"]
-        data_str = data["data"]
+    def save_receita(self, data: Dict[str, Any], popup: tk.Toplevel):
+        """
+        Callback chamado pelo PopupReceita.
+        Fecha o popup inicial e abre a tela de adição de tarefas.
+        """
+        # Validação básica já feita no popup, mas reforçamos aqui se necessário
+        cliente = data.get("cliente")
+        oficina = data.get("oficina")
+        motor = data.get("motor")
+        placa = data.get("placa")
+        data_str = data.get("data")
 
         if not all([cliente, oficina, motor, placa, data_str]):
             messagebox.showwarning("Campo Vazio", "Todos os campos devem ser preenchidos.", parent=popup)
@@ -84,20 +101,26 @@ class ReceitasFrame(ttk.Frame):
 
         # Abre o popup de tarefas para a nova receita
         # Passamos None como ID pois a receita ainda não foi salva no banco
+        # A classe ReceitasTarefas lidará com a criação do registro no banco
         nova_receita = (None, cliente, oficina, motor, placa, data_str)
         ReceitasTarefas(self, receita=nova_receita)
 
     def view_selected_receita(self):
+        """Abre a visualização detalhada da receita selecionada."""
         selected_item = self.tree.selection()
         if not selected_item:
             messagebox.showwarning("Nenhuma Seleção", "Por favor, selecione uma receita para visualizar.")
             return
         
         # O primeiro valor da tupla values é o ID
-        receita_id = self.tree.item(selected_item[0], "values")[0]
-        ViewReceita(self, receita_id)
+        try:
+            receita_id = self.tree.item(selected_item[0], "values")[0]
+            ViewReceita(self, receita_id)
+        except IndexError:
+            messagebox.showerror("Erro", "Erro ao recuperar ID da receita selecionada.")
 
     def delete_selected_receita(self):
+        """Deleta a receita selecionada após confirmação."""
         selected_item = self.tree.selection()
         if not selected_item:
             messagebox.showwarning("Nenhuma Seleção", "Por favor, selecione uma receita para deletar.")
@@ -108,6 +131,7 @@ class ReceitasFrame(ttk.Frame):
                 receita_id = self.tree.item(selected_item[0], "values")[0]
                 delete_receita(receita_id)
                 self.populate_receitas_list()
+                messagebox.showinfo("Sucesso", "Receita deletada com sucesso.")
             except Exception as e:
                 messagebox.showerror("Erro de Banco de Dados", f"Não foi possível deletar a receita: {e}")
 

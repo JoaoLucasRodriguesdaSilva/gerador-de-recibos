@@ -1,10 +1,13 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 from datetime import datetime
+from typing import Callable, Dict, Any
 from interface.utils.form_entry import FormEntry
 
 class PopupReceita:
-    def __init__(self, parent, save_callback):
+    """Popup para adicionar uma nova receita."""
+    
+    def __init__(self, parent: tk.Widget, save_callback: Callable[[Dict[str, Any], tk.Toplevel], None]):
         self.parent = parent
         self.save_callback = save_callback
 
@@ -12,6 +15,7 @@ class PopupReceita:
         self.popup = tk.Toplevel(parent)
         self.popup.title("Adicionar Receita")
         self.popup.transient(parent)
+        self.popup.resizable(False, False)
 
         # Frame principal do popup
         popup_frame = ttk.Frame(self.popup, padding=10)
@@ -39,29 +43,44 @@ class PopupReceita:
         button_frame.grid(row=5, column=0, pady=10)
 
         # Botões de salvar e cancelar
-        SaveButton = ttk.Button(button_frame, text="Próximo", command=self.next_step)
-        SaveButton.pack(side="left", padx=5)
+        self.save_button = ttk.Button(button_frame, text="Próximo", command=self.next_step)
+        self.save_button.pack(side="left", padx=5)
 
-        CancelButton = ttk.Button(button_frame, text="Cancelar", command=self.popup.destroy)
-        CancelButton.pack(side="left")
+        self.cancel_button = ttk.Button(button_frame, text="Cancelar", command=self.popup.destroy)
+        self.cancel_button.pack(side="left")
 
-        # Centralizar popup ajustando ao tamanho do conteúdo
+        self._center_window()
+        self.popup.grab_set()
+
+    def _center_window(self):
+        """Centraliza o popup na janela pai."""
         self.popup.update_idletasks()
         width = self.popup.winfo_reqwidth()
         height = self.popup.winfo_reqheight()
-        x = parent.winfo_rootx() + (parent.winfo_width() // 2) - (width // 2)
-        y = parent.winfo_rooty() + (parent.winfo_height() // 2) - (height // 2)
+        
+        parent_x = self.parent.winfo_rootx()
+        parent_y = self.parent.winfo_rooty()
+        parent_width = self.parent.winfo_width()
+        parent_height = self.parent.winfo_height()
+        
+        x = parent_x + (parent_width // 2) - (width // 2)
+        y = parent_y + (parent_height // 2) - (height // 2)
+        
         self.popup.geometry(f"+{x}+{y}")
 
-        self.popup.grab_set()
-
     def next_step(self):
-        """Coleta os dados, chama a função de callback para salvar e abre popup para associar tarefas."""
+        """Coleta os dados, valida e chama a função de callback."""
         data = {
-            "cliente": self.cliente_entry.get_entry_value(),
-            "oficina": self.oficina_entry.get_entry_value(),
-            "motor": self.motor_entry.get_entry_value(),
-            "placa": self.placa_entry.get_entry_value(),
-            "data": self.data_entry.get_entry_value()
+            "cliente": self.cliente_entry.get_entry_value().strip(),
+            "oficina": self.oficina_entry.get_entry_value().strip(),
+            "motor": self.motor_entry.get_entry_value().strip(),
+            "placa": self.placa_entry.get_entry_value().strip(),
+            "data": self.data_entry.get_entry_value().strip()
         }
+
+        # Validação simples
+        if not data["cliente"] or not data["oficina"]:
+             messagebox.showwarning("Campos Obrigatórios", "Por favor, preencha pelo menos Cliente e Oficina.", parent=self.popup)
+             return
+
         self.save_callback(data, self.popup)
