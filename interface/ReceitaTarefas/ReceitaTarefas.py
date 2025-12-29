@@ -224,7 +224,7 @@ class ReceitasTarefas:
             
             self.gerar_pdf_recibo()
 
-            messagebox.showinfo("Sucesso", f"Receita salva e PDF gerado (recibo_{self.receita_id}.pdf)!", parent=self.popup)
+            messagebox.showinfo("Sucesso", f"Receita salva e PDF gerado!", parent=self.popup)
             self.popup.destroy()
             
         except Exception as e:
