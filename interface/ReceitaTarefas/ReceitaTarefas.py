@@ -11,6 +11,7 @@ from database.tarefas import get_all_tarefas
 from database.receita_tarefa import add_tarefa_to_receita
 from database.receitas import add_receita
 from gerador_pdf.gerador_recibo import gerar_pdf_orcamento
+from interface.utils.app_paths import get_receitas_dir
 
 class ReceitasTarefas:
     """Janela para associar tarefas a uma receita e gerar o recibo."""
@@ -232,7 +233,7 @@ class ReceitasTarefas:
 
     def gerar_pdf_recibo(self):
         """Coleta os dados e chama o gerador de PDF."""
-        recibos_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../receitas'))
+        recibos_dir = get_receitas_dir()
         os.makedirs(recibos_dir, exist_ok=True)
         
         # Formata o nome do arquivo: Cliente_Placa_Data.pdf
