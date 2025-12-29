@@ -8,6 +8,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from interface.Receitas.receitas import ReceitasFrame
 from database.criar_bd import create_table
+from interface.utils.app_paths import get_resource_path
 
 class MainApp:
     def __init__(self, root):
@@ -15,17 +16,20 @@ class MainApp:
         self.root = root
         self.root.title("Gerenciador de Receitas")
         
-        # Tenta carregar o ícone da janela (se existir)
+        # Tenta carregar o ícone da janela usando o caminho correto do recurso
         try:
+            icon_path_ico = get_resource_path("FrangoAmelia.ico")
+            icon_path_png = get_resource_path("FrangoAmelia.png")
+
             # Para Windows (.ico)
-            if os.path.exists("FrangoAmelia.ico"):
-                self.root.iconbitmap("FrangoAmelia.ico")
+            if os.path.exists(icon_path_ico):
+                self.root.iconbitmap(icon_path_ico)
             # Para Linux/Mac (.png)
-            elif os.path.exists("FrangoAmelia.png"):
-                icon = tk.PhotoImage(file="FrangoAmelia.png")
+            elif os.path.exists(icon_path_png):
+                icon = tk.PhotoImage(file=icon_path_png)
                 self.root.iconphoto(True, icon)
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"Erro ao carregar ícone: {e}")
         
         # Centralizar a janela na tela
         window_width = 1024
