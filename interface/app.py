@@ -15,6 +15,18 @@ class MainApp:
         self.root = root
         self.root.title("Gerenciador de Receitas")
         
+        # Tenta carregar o ícone da janela (se existir)
+        try:
+            # Para Windows (.ico)
+            if os.path.exists("FrangoAmelia.ico"):
+                self.root.iconbitmap("FrangoAmelia.ico")
+            # Para Linux/Mac (.png)
+            elif os.path.exists("FrangoAmelia.png"):
+                icon = tk.PhotoImage(file="FrangoAmelia.png")
+                self.root.iconphoto(True, icon)
+        except Exception:
+            pass
+        
         # Centralizar a janela na tela
         window_width = 1024
         window_height = 600
