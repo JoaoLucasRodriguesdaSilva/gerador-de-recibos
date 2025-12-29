@@ -76,11 +76,11 @@ class ReceitasTarefas:
 
         # Linha 1
         ttk.Label(self.atribuir_tarefa_frame, text="Quantidade:").grid(row=0, column=0, padx=5, pady=2, sticky="w")
-        self.entry_quantidade = ttk.Entry(self.atribuir_tarefa_frame, width=10)
+        self.entry_quantidade = ttk.Entry(self.atribuir_tarefa_frame, width=20)
         self.entry_quantidade.grid(row=0, column=1, padx=5, pady=2, sticky="w")
 
         ttk.Label(self.atribuir_tarefa_frame, text="Tarefa:").grid(row=0, column=2, padx=5, pady=2, sticky="w")
-        self.entry_tarefa = ttk.Entry(self.atribuir_tarefa_frame, width=50)
+        self.entry_tarefa = ttk.Entry(self.atribuir_tarefa_frame, width=40)
         self.entry_tarefa.grid(row=0, column=3, padx=5, pady=2, sticky="w")
         
         # Bindings para autocomplete
@@ -96,11 +96,11 @@ class ReceitasTarefas:
 
         # Linha 2
         ttk.Label(self.atribuir_tarefa_frame, text="Valor:").grid(row=1, column=0, padx=5, pady=2, sticky="w")
-        self.entry_valor = ttk.Entry(self.atribuir_tarefa_frame, width=10)
+        self.entry_valor = ttk.Entry(self.atribuir_tarefa_frame, width=20)
         self.entry_valor.grid(row=1, column=1, padx=5, pady=2, sticky="w")
 
         ttk.Label(self.atribuir_tarefa_frame, text="Observações:").grid(row=1, column=2, padx=5, pady=2, sticky="w")
-        self.entry_observacoes = ttk.Entry(self.atribuir_tarefa_frame, width=50)
+        self.entry_observacoes = ttk.Entry(self.atribuir_tarefa_frame, width=40)
         self.entry_observacoes.grid(row=1, column=3, padx=5, pady=2, sticky="w")
 
     def _create_list_frame(self):
