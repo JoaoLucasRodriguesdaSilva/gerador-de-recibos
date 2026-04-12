@@ -33,25 +33,25 @@ def gerar_pdf_orcamento(receita_id: int, nome_arquivo: str):
         print(f"Erro: Receita ID {receita_id} não encontrada.")
         return
 
-    # Mapeia tupla para dicionário (id, cliente, oficina, motor_cabecote, placa, data)
+    # Mapeia campos da receita para dicionário
     dados_receita = {
-        'cliente': receita_tuple[1],
-        'oficina': receita_tuple[2],
-        'motor_cabecote': receita_tuple[3],
-        'placa': receita_tuple[4],
-        'data': receita_tuple[5]
+        'cliente': receita_tuple.cliente,
+        'oficina': receita_tuple.oficina,
+        'motor_cabecote': receita_tuple.motor_cabecote,
+        'placa': receita_tuple.placa,
+        'data': receita_tuple.data
     }
 
     # Busca tarefas da receita no banco
     tarefas_tuples = get_tarefas_from_receita(receita_id)
-    # Mapeia tuplas para lista de dicionários (id, nome, quantidade, valor, observacoes)
+    # Mapeia para lista de dicionários
     dados_tarefas = []
     for t in tarefas_tuples:
         dados_tarefas.append({
-            'descricao': t[1],
-            'quantidade': t[2],
-            'valor': t[3],
-            'observacao': t[4]
+            'descricao': t.nome,
+            'quantidade': t.quantidade,
+            'valor': t.valor,
+            'observacao': t.observacoes
         })
 
     # Configuração do Documento

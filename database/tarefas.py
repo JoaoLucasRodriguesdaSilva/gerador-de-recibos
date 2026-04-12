@@ -1,6 +1,7 @@
 # Este arquivo contem as requisições das tarefas
 import sqlite3
 from .criar_bd import connect_db
+from .models import Tarefa
 
 # Criar tarefa
 def add_tarefa(nome):
@@ -27,7 +28,8 @@ def get_tarefa(tarefa_id):
     try:
         cursor = conn.cursor()
         cursor.execute('SELECT * FROM tarefas WHERE id = ?', (tarefa_id,))
-        return cursor.fetchone()
+        row = cursor.fetchone()
+        return Tarefa(*row) if row else None
     except sqlite3.Error as e:
         print(f"Erro ao buscar tarefa por ID: {e}")
         return None
@@ -41,7 +43,7 @@ def get_all_tarefas():
     try:
         cursor = conn.cursor()
         cursor.execute('SELECT * FROM tarefas ORDER BY nome ASC')
-        return cursor.fetchall()
+        return [Tarefa(*row) for row in cursor.fetchall()]
     except sqlite3.Error as e:
         print(f"Erro ao listar tarefas: {e}")
         return []
@@ -58,7 +60,7 @@ def get_tarefas_by_name(substring):
                        WHERE nome LIKE ? 
                        ORDER BY nome ASC""", 
                        (f'%{substring}%',))
-        return cursor.fetchall()
+        return [Tarefa(*row) for row in cursor.fetchall()]
     except sqlite3.Error as e:
         print(f"Erro ao buscar tarefas por nome: {e}")
         return []

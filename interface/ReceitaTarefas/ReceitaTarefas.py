@@ -1,8 +1,9 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 import os
-from typing import List, Tuple, Optional, Dict, Any
+from typing import List, Optional, Dict, Any
 
+from database.models import Receita
 from database.tarefas import get_all_tarefas
 from database.receita_tarefa import add_tarefa_to_receita
 from database.receitas import add_receita
@@ -13,10 +14,10 @@ from interface.utils.window_utils import center_window
 class ReceitasTarefas:
     """Janela para associar tarefas a uma receita e gerar o recibo."""
 
-    def __init__(self, parent: tk.Widget, receita: Tuple[Optional[int], str, str, str, str, str]):
+    def __init__(self, parent: tk.Widget, receita: Receita):
         self.parent = parent
         self.receita = receita
-        self.receita_id = receita[0]
+        self.receita_id = receita.id
 
         self.tarefas_map: Dict[str, int] = {}
         self.todas_tarefas: List[str] = []
@@ -29,7 +30,7 @@ class ReceitasTarefas:
         """Carrega as tarefas do banco de dados."""
         try:
             tarefas_db = get_all_tarefas()
-            self.tarefas_map = {t[1]: t[0] for t in tarefas_db}
+            self.tarefas_map = {t.nome: t.id for t in tarefas_db}
             self.todas_tarefas = list(self.tarefas_map.keys())
         except Exception as e:
             messagebox.showerror("Erro", f"Erro ao carregar tarefas: {e}")
@@ -57,11 +58,11 @@ class ReceitasTarefas:
 
         # Labels com grid
         labels = [
-            (f"Cliente: {self.receita[1]}", 0, 0),
-            (f"Motor/Cabeçote: {self.receita[3]}", 0, 1),
-            (f"Oficina: {self.receita[2]}", 1, 0),
-            (f"Placa: {self.receita[4]}", 1, 1),
-            (f"Data: {self.receita[5]}", 2, 0),
+            (f"Cliente: {self.receita.cliente}", 0, 0),
+            (f"Motor/Cabeçote: {self.receita.motor_cabecote}", 0, 1),
+            (f"Oficina: {self.receita.oficina}", 1, 0),
+            (f"Placa: {self.receita.placa}", 1, 1),
+            (f"Data: {self.receita.data}", 2, 0),
         ]
 
         for text, row, col in labels:
@@ -189,8 +190,13 @@ class ReceitasTarefas:
         try:
             # Se a receita ainda não tem ID (é nova), salva ela primeiro
             if self.receita_id is None:
-                _, cliente, oficina, motor, placa, data_str = self.receita
-                self.receita_id = add_receita(cliente, oficina, motor, placa, data_str)
+                self.receita_id = add_receita(
+                    self.receita.cliente,
+                    self.receita.oficina,
+                    self.receita.motor_cabecote,
+                    self.receita.placa,
+                    self.receita.data,
+                )
                 
                 if hasattr(self.parent, 'populate_receitas_list'):
                     self.parent.populate_receitas_list()
@@ -218,10 +224,9 @@ class ReceitasTarefas:
         os.makedirs(recibos_dir, exist_ok=True)
         
         # Formata o nome do arquivo: Cliente_Placa_Data.pdf
-        # self.receita = (id, cliente, oficina, motor, placa, data)
-        cliente = str(self.receita[1]).strip().replace(" ", "_")
-        placa = str(self.receita[4]).strip().replace(" ", "_")
-        data = str(self.receita[5]).strip().replace("/", "-")
+        cliente = self.receita.cliente.strip().replace(" ", "_")
+        placa = self.receita.placa.strip().replace(" ", "_")
+        data = self.receita.data.strip().replace("/", "-")
         
         filename = f"{cliente}_{placa}_{data}.pdf"
         output_file = os.path.join(recibos_dir, filename)

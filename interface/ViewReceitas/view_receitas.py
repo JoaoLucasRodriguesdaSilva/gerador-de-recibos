@@ -40,25 +40,25 @@ class ViewReceita:
 
         # Linha 0
         ttk.Label(self.info_frame, text="Cliente:", font=("", 9, "bold")).grid(row=0, column=0, sticky="e", padx=5, pady=2)
-        self.cliente_label = ttk.Label(self.info_frame, text=self.receita[1])
+        self.cliente_label = ttk.Label(self.info_frame, text=self.receita.cliente)
         self.cliente_label.grid(row=0, column=1, sticky="w", padx=5, pady=2)
 
         ttk.Label(self.info_frame, text="Motor/Cabeçote:", font=("", 9, "bold")).grid(row=0, column=2, sticky="e", padx=5, pady=2)
-        self.motor_label = ttk.Label(self.info_frame, text=self.receita[3])
+        self.motor_label = ttk.Label(self.info_frame, text=self.receita.motor_cabecote)
         self.motor_label.grid(row=0, column=3, sticky="w", padx=5, pady=2)
 
         # Linha 1
         ttk.Label(self.info_frame, text="Oficina:", font=("", 9, "bold")).grid(row=1, column=0, sticky="e", padx=5, pady=2)
-        self.oficina_label = ttk.Label(self.info_frame, text=self.receita[2])
+        self.oficina_label = ttk.Label(self.info_frame, text=self.receita.oficina)
         self.oficina_label.grid(row=1, column=1, sticky="w", padx=5, pady=2)
 
         ttk.Label(self.info_frame, text="Placa:", font=("", 9, "bold")).grid(row=1, column=2, sticky="e", padx=5, pady=2)
-        self.placa_label = ttk.Label(self.info_frame, text=self.receita[4])
+        self.placa_label = ttk.Label(self.info_frame, text=self.receita.placa)
         self.placa_label.grid(row=1, column=3, sticky="w", padx=5, pady=2)
 
         # Linha 2
         ttk.Label(self.info_frame, text="Data:", font=("", 9, "bold")).grid(row=2, column=0, sticky="e", padx=5, pady=2)
-        self.data_label = ttk.Label(self.info_frame, text=self.receita[5])
+        self.data_label = ttk.Label(self.info_frame, text=self.receita.data)
         self.data_label.grid(row=2, column=1, sticky="w", padx=5, pady=2)
 
         # --- Frame de Tarefas ---
@@ -110,24 +110,15 @@ class ViewReceita:
             
         tarefas = get_tarefas_from_receita(self.receita_id)
         for t in tarefas:
-            # t = (id, nome, quantidade, valor, observacoes)
-            t_id = t[0]
-            qtd = t[2]
-            nome = t[1]
-            valor = t[3]
-            obs = t[4]
-            
-            # Formata valor
-            valor_fmt = f"R$ {valor:.2f}".replace('.', ',')
-            
-            self.tree.insert("", "end", values=(t_id, qtd, nome, valor_fmt, obs))
+            valor_fmt = f"R$ {t.valor:.2f}".replace('.', ',')
+            self.tree.insert("", "end", values=(t.id, t.quantidade, t.nome, valor_fmt, t.observacoes))
 
     def update_info_labels(self):
-        self.cliente_label.config(text=self.receita[1])
-        self.oficina_label.config(text=self.receita[2])
-        self.motor_label.config(text=self.receita[3])
-        self.placa_label.config(text=self.receita[4])
-        self.data_label.config(text=self.receita[5])
+        self.cliente_label.config(text=self.receita.cliente)
+        self.oficina_label.config(text=self.receita.oficina)
+        self.motor_label.config(text=self.receita.motor_cabecote)
+        self.placa_label.config(text=self.receita.placa)
+        self.data_label.config(text=self.receita.data)
 
     def edit_receita(self):
         edit_app = EditReceitas(self.popup, self.receita)

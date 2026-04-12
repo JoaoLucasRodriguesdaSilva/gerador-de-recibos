@@ -11,7 +11,7 @@ class EditReceitas:
 
         # 1. Criar pop-up
         self.popup = tk.Toplevel(parent)
-        self.popup.title(f"Editar Receita #{receita[0]}")
+        self.popup.title(f"Editar Receita #{receita.id}")
         self.popup.transient(parent)
         self.popup.grab_set()
         
@@ -29,7 +29,11 @@ class EditReceitas:
         form_frame.pack(fill="both", expand=True)
         
         # Desempacotar dados da receita: id, cliente, oficina, motor_cabecote, placa, data
-        _, cliente, oficina, motor, placa, data = self.receita
+        cliente = self.receita.cliente
+        oficina = self.receita.oficina
+        motor = self.receita.motor_cabecote
+        placa = self.receita.placa
+        data = self.receita.data
 
         # Campos
         self.cliente_entry = FormEntry(form_frame, "Cliente:", cliente)
@@ -64,7 +68,7 @@ class EditReceitas:
         placa = self.placa_entry.get_entry_value()
         data = self.data_entry.get_entry_value()
         
-        update_receita(self.receita[0], cliente, oficina, motor, placa, data)
+        update_receita(self.receita.id, cliente, oficina, motor, placa, data)
         self.popup.destroy()
 
 
