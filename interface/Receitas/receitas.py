@@ -93,6 +93,9 @@ class ReceitasFrame(ttk.Frame):
 
     def _apply_search_filter(self):
         """Filtra as receitas exibidas na Treeview com base no texto de pesquisa."""
+        if not hasattr(self, "tree") or not hasattr(self, "_all_receitas"):
+            return
+
         for item in self.tree.get_children():
             self.tree.delete(item)
 
