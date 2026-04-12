@@ -131,7 +131,3 @@ def create_table():
         print(f"Erro ao manipular banco de dados: {e}")
     finally:
         conn.close()
-
-def criar_db():
-    create_table()
-    print(f"Banco de dados '{get_db_path()}' verificado com sucesso.")

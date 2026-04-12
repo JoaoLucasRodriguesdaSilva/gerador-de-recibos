@@ -1,6 +1,7 @@
 # Este arquivo é responsavel pelas requisições da relação receita <=> tarefa
 import sqlite3
 from .criar_bd import connect_db
+from .models import TarefaReceita
 
 # Associa um tarefa a uma receita
 def add_tarefa_to_receita(receita_id, tarefa_id, quantidade, valor, observacoes):
@@ -29,7 +30,7 @@ def get_tarefas_from_receita(receita_id):
             JOIN receita_tarefa rt ON t.id = rt.tarefa_id
             WHERE rt.receita_id = ?
         """, (receita_id,))
-        return cursor.fetchall()
+        return [TarefaReceita(*row) for row in cursor.fetchall()]
     except sqlite3.Error as e:
         print(f"Erro ao buscar tarefas da receita: {e}")
         return []

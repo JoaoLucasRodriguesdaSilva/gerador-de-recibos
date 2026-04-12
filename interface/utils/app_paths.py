@@ -20,6 +20,18 @@ def get_receitas_dir():
     base_path = get_base_path()
     return os.path.join(base_path, 'receitas')
 
+def build_pdf_filename(receita):
+    """Constrói o caminho completo do arquivo PDF para uma receita.
+
+    O nome do arquivo segue o padrão Cliente_Placa_Data.pdf, com espaços
+    substituídos por '_' e barras da data substituídas por '-'.
+    """
+    cliente = receita.cliente.strip().replace(" ", "_")
+    placa = receita.placa.strip().replace(" ", "_")
+    data = receita.data.strip().replace("/", "-")
+    filename = f"{cliente}_{placa}_{data}.pdf"
+    return os.path.join(get_receitas_dir(), filename)
+
 def get_resource_path(relative_path):
     """
     Retorna o caminho absoluto para um recurso (arquivo), funcionando tanto

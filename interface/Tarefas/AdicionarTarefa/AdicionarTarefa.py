@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from typing import Callable, Any, Dict
 from interface.utils.form_entry import FormEntry
+from interface.utils.window_utils import center_window
 
 class AdicionarTarefa:
     """Popup para adicionar uma nova tarefa."""
@@ -34,30 +35,10 @@ class AdicionarTarefa:
         ttk.Button(button_frame, text="Salvar", command=self.on_save).pack(side="left", padx=5)
         ttk.Button(button_frame, text="Cancelar", command=self.popup.destroy).pack(side="left")
 
-        self._center_window()
+        center_window(self.popup, self.parent)
         self.popup.grab_set()
-
-    def _center_window(self):
-        """Centraliza o popup na janela pai."""
-        self.popup.update_idletasks()
-        width = self.popup.winfo_reqwidth()
-        height = self.popup.winfo_reqheight()
-        
-        parent_x = self.parent.winfo_rootx()
-        parent_y = self.parent.winfo_rooty()
-        parent_width = self.parent.winfo_width()
-        parent_height = self.parent.winfo_height()
-        
-        x = parent_x + (parent_width // 2) - (width // 2)
-        y = parent_y + (parent_height // 2) - (height // 2)
-        
-        self.popup.geometry(f"+{x}+{y}")
 
     def on_save(self):
         """Coleta os dados e chama a função de callback para salvar."""
-        data = {"nome": self.nome_entry.get()}
-        self.save_callback(data, self.popup)
-        data = {
-            "nome": self.nome_entry.get_entry_value(),
-        }
+        data = {"nome": self.nome_entry.get_entry_value()}
         self.save_callback(data, self.popup)

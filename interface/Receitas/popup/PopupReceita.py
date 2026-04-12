@@ -3,6 +3,7 @@ from tkinter import ttk, messagebox
 from datetime import datetime
 from typing import Callable, Dict, Any
 from interface.utils.form_entry import FormEntry
+from interface.utils.window_utils import center_window
 
 class PopupReceita:
     """Popup para adicionar uma nova receita."""
@@ -49,24 +50,8 @@ class PopupReceita:
         self.cancel_button = ttk.Button(button_frame, text="Cancelar", command=self.popup.destroy)
         self.cancel_button.pack(side="left")
 
-        self._center_window()
+        center_window(self.popup, self.parent)
         self.popup.grab_set()
-
-    def _center_window(self):
-        """Centraliza o popup na janela pai."""
-        self.popup.update_idletasks()
-        width = self.popup.winfo_reqwidth()
-        height = self.popup.winfo_reqheight()
-        
-        parent_x = self.parent.winfo_rootx()
-        parent_y = self.parent.winfo_rooty()
-        parent_width = self.parent.winfo_width()
-        parent_height = self.parent.winfo_height()
-        
-        x = parent_x + (parent_width // 2) - (width // 2)
-        y = parent_y + (parent_height // 2) - (height // 2)
-        
-        self.popup.geometry(f"+{x}+{y}")
 
     def next_step(self):
         """Coleta os dados, valida e chama a função de callback."""

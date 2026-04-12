@@ -1,13 +1,9 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-import sys
-import os
 from typing import Dict, Any
 
-# Adiciona o diretório raiz do projeto ao sys.path para encontrar os módulos do banco de dados
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
-
 from database.receitas import get_all_receitas, delete_receita
+from database.models import Receita
 from interface.Receitas.popup.PopupReceita import PopupReceita
 from interface.Tarefas.RegistroTarefas import RegistroTarefas
 from interface.ReceitaTarefas.ReceitaTarefas import ReceitasTarefas
@@ -105,8 +101,7 @@ class ReceitasFrame(ttk.Frame):
 
         query = self._search_var.get().strip().lower()
         for receita in self._all_receitas:
-            # receita[1] é o campo 'cliente'
-            if query in str(receita[1]).lower():
+            if query in receita.cliente.lower():
                 self.tree.insert("", "end", values=receita)
 
     def _on_search_changed(self, *args):
@@ -139,7 +134,7 @@ class ReceitasFrame(ttk.Frame):
         # Abre o popup de tarefas para a nova receita
         # Passamos None como ID pois a receita ainda não foi salva no banco
         # A classe ReceitasTarefas lidará com a criação do registro no banco
-        nova_receita = (None, cliente, oficina, motor, placa, data_str)
+        nova_receita = Receita(id=None, cliente=cliente, oficina=oficina, motor_cabecote=motor, placa=placa, data=data_str)
         ReceitasTarefas(self, receita=nova_receita)
 
     def view_selected_receita(self):
