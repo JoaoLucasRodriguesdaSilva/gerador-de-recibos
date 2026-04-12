@@ -187,7 +187,7 @@ def gerar_pdf_orcamento(receita_id: int, nome_arquivo: str):
             val = float(val_str)
             if val > 0 or (qtd and qtd != "0"):
                 estilo_tabela_itens.add('FONTNAME', (0, i), (-1, i), 'Helvetica-Bold')
-        except:
+        except (ValueError, TypeError):
             pass
 
     tabela_itens.setStyle(estilo_tabela_itens)

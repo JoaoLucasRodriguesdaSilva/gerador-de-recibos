@@ -8,7 +8,7 @@ from database.tarefas import get_all_tarefas
 from database.receita_tarefa import add_tarefa_to_receita
 from database.receitas import add_receita
 from gerador_pdf.gerador_recibo import gerar_pdf_orcamento
-from interface.utils.app_paths import get_receitas_dir
+from interface.utils.app_paths import get_receitas_dir, build_pdf_filename
 from interface.utils.window_utils import center_window
 
 class ReceitasTarefas:
@@ -223,13 +223,7 @@ class ReceitasTarefas:
         recibos_dir = get_receitas_dir()
         os.makedirs(recibos_dir, exist_ok=True)
         
-        # Formata o nome do arquivo: Cliente_Placa_Data.pdf
-        cliente = self.receita.cliente.strip().replace(" ", "_")
-        placa = self.receita.placa.strip().replace(" ", "_")
-        data = self.receita.data.strip().replace("/", "-")
-        
-        filename = f"{cliente}_{placa}_{data}.pdf"
-        output_file = os.path.join(recibos_dir, filename)
+        output_file = build_pdf_filename(self.receita)
         
         try:
             gerar_pdf_orcamento(self.receita_id, output_file)

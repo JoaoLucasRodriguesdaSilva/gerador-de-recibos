@@ -6,6 +6,8 @@ from interface.utils.window_utils import center_window
 from database.receitas import update_receita
 
 class EditReceitas:
+    """Janela popup para editar os dados de uma receita existente."""
+
     def __init__(self, parent, receita):
         self.receita = receita
 

@@ -8,6 +8,8 @@ from interface.ViewReceitas.EditReceitas.edit_receitas import EditReceitas
 from interface.utils.window_utils import center_window
 
 class ViewReceita:
+    """Janela popup para visualizar, editar e deletar uma receita e suas tarefas."""
+
     def __init__(self, parent, receita_id):
         self.parent = parent
         self.receita_id = receita_id
