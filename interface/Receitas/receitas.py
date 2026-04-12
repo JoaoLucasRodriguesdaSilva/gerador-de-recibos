@@ -19,6 +19,7 @@ class ReceitasFrame(ttk.Frame):
     def __init__(self, parent: tk.Widget):
         super().__init__(parent)
         
+        self._all_receitas = []
         self.create_widgets()
         self.populate_receitas_list()
 
@@ -35,6 +36,17 @@ class ReceitasFrame(ttk.Frame):
         ttk.Button(button_frame, text="Nova Receita", command=self.show_add_receita_popup).pack(side="left", padx=(0, 5))
         ttk.Button(button_frame, text="Tarefas Salvas", command=self.show_saved_tarefas_popup).pack(side="left")
         ttk.Button(button_frame, text="Atualizar Lista", command=self.populate_receitas_list).pack(side="left", padx=(5, 0))
+
+        # --- Barra de Pesquisa ---
+        search_frame = ttk.Frame(management_frame)
+        search_frame.pack(pady=(0, 5), padx=5, anchor="w")
+
+        ttk.Label(search_frame, text="Pesquisar por cliente:").pack(side="left", padx=(0, 5))
+        self._search_var = tk.StringVar()
+        self._search_var.trace_add("write", self._on_search_changed)
+        search_entry = ttk.Entry(search_frame, textvariable=self._search_var, width=30)
+        search_entry.pack(side="left")
+        ttk.Button(search_frame, text="Limpar", command=self._clear_search).pack(side="left", padx=(5, 0))
 
         # --- Frame da Lista de Receitas ---
         list_frame = ttk.LabelFrame(self, text="Receitas Cadastradas")
@@ -74,11 +86,32 @@ class ReceitasFrame(ttk.Frame):
             self.tree.delete(item)
             
         try:
-            receitas = get_all_receitas()
-            for receita in receitas:
-                self.tree.insert("", "end", values=receita)
+            self._all_receitas = get_all_receitas()
+            self._apply_search_filter()
         except Exception as e:
             messagebox.showerror("Erro", f"Erro ao carregar receitas: {e}")
+
+    def _apply_search_filter(self):
+        """Filtra as receitas exibidas na Treeview com base no texto de pesquisa."""
+        if not hasattr(self, "tree") or not hasattr(self, "_all_receitas"):
+            return
+
+        for item in self.tree.get_children():
+            self.tree.delete(item)
+
+        query = self._search_var.get().strip().lower()
+        for receita in self._all_receitas:
+            # receita[1] é o campo 'cliente'
+            if query in str(receita[1]).lower():
+                self.tree.insert("", "end", values=receita)
+
+    def _on_search_changed(self, *args):
+        """Chamado sempre que o texto da barra de pesquisa muda."""
+        self._apply_search_filter()
+
+    def _clear_search(self):
+        """Limpa o campo de pesquisa."""
+        self._search_var.set("")
 
     def save_receita(self, data: Dict[str, Any], popup: tk.Toplevel):
         """
