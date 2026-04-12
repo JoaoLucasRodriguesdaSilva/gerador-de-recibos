@@ -1,6 +1,7 @@
 import os
 import subprocess
 import platform
+import sys
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from typing import Optional
@@ -61,8 +62,16 @@ def selecionar_e_imprimir():
         imprimir_arquivo(arquivo)
 
 if __name__ == "__main__":
-    # Cria uma raiz Tk oculta se executado diretamente
-    root = tk.Tk()
-    root.withdraw()
-    selecionar_e_imprimir()
-    root.destroy()
+    # Se um caminho de arquivo for passado como argumento, imprime diretamente.
+    # Caso contrário, abre uma janela de seleção de arquivo.
+    if len(sys.argv) > 1:
+        caminho = sys.argv[1]
+        root = tk.Tk()
+        root.withdraw()
+        imprimir_arquivo(caminho)
+        root.destroy()
+    else:
+        root = tk.Tk()
+        root.withdraw()
+        selecionar_e_imprimir()
+        root.destroy()
