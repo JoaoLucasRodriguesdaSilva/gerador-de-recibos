@@ -12,6 +12,7 @@ from database.receita_tarefa import add_tarefa_to_receita
 from database.receitas import add_receita
 from gerador_pdf.gerador_recibo import gerar_pdf_orcamento
 from interface.utils.app_paths import get_receitas_dir
+from interface.utils.window_utils import center_window
 
 class ReceitasTarefas:
     """Janela para associar tarefas a uma receita e gerar o recibo."""
@@ -50,7 +51,7 @@ class ReceitasTarefas:
         self._create_list_frame()
         self._create_buttons_frame()
         
-        self._center_window()
+        center_window(self.popup, self.parent)
         self.popup.grab_set()
 
     def _create_info_frame(self):
@@ -137,22 +138,6 @@ class ReceitasTarefas:
         ttk.Button(frame, text="Adicionar à Lista", command=self.associar_tarefa).pack(side="left", padx=5, expand=True, fill="x")
         ttk.Button(frame, text="Remover da Lista", command=self.remover).pack(side="left", padx=5, expand=True, fill="x")
         ttk.Button(frame, text="Salvar no Banco e Fechar", command=self.salvar_no_banco).pack(side="left", padx=5, expand=True, fill="x")
-
-    def _center_window(self):
-        """Centraliza o popup na janela pai."""
-        self.popup.update_idletasks()
-        width = self.popup.winfo_reqwidth()
-        height = self.popup.winfo_reqheight()
-        
-        parent_x = self.parent.winfo_rootx()
-        parent_y = self.parent.winfo_rooty()
-        parent_width = self.parent.winfo_width()
-        parent_height = self.parent.winfo_height()
-        
-        x = parent_x + (parent_width // 2) - (width // 2)
-        y = parent_y + (parent_height // 2) - (height // 2)
-        
-        self.popup.geometry(f"+{x}+{y}")
 
     def associar_tarefa(self):
         """Adiciona a tarefa à lista visual (não salva no banco ainda)."""

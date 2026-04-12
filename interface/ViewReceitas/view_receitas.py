@@ -10,6 +10,7 @@ from database.receitas import get_receita_by_id, delete_receita
 from database.receita_tarefa import get_tarefas_from_receita, remove_tarefa_from_receita
 from interface.ReceitaTarefas.ReceitaTarefas import ReceitasTarefas
 from interface.ViewReceitas.EditReceitas.edit_receitas import EditReceitas
+from interface.utils.window_utils import center_window
 
 class ViewReceita:
     def __init__(self, parent, receita_id):
@@ -29,21 +30,8 @@ class ViewReceita:
         
         # Configuração inicial de tamanho (será ajustado pelo conteúdo, mas definimos um mínimo)
         self.popup.minsize(600, 400)
-
-        # Centraliza o popup na janela pai
-        self.popup.update_idletasks()
-        parent_x = self.parent.winfo_rootx()
-        parent_y = self.parent.winfo_rooty()
-        parent_width = self.parent.winfo_width()
-        parent_height = self.parent.winfo_height()
-        
-        # Tamanho estimado inicial
-        popup_width = 600
-        popup_height = 500
-        
-        x = parent_x + (parent_width // 2) - (popup_width // 2)
-        y = parent_y + (parent_height // 2) - (popup_height // 2)
-        self.popup.geometry(f'{popup_width}x{popup_height}+{x}+{y}')
+        self.popup.geometry("600x500")
+        center_window(self.popup, self.parent)
 
         self.popup.grab_set()
 

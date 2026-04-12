@@ -7,6 +7,7 @@ from typing import Dict, Any, Callable
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 from database.tarefas import add_tarefa, get_all_tarefas, delete_tarefa
 from interface.Tarefas.AdicionarTarefa.AdicionarTarefa import AdicionarTarefa
+from interface.utils.window_utils import center_window
 
 class RegistroTarefas:
     """Popup para registrar, remover e atualizar possíveis tarefas."""
@@ -29,7 +30,7 @@ class RegistroTarefas:
         self._create_list_frame(popup_frame)
         self._create_buttons_frame(popup_frame)
         
-        self._center_window()
+        center_window(self.popup, self.parent)
         self.popup.grab_set()
 
     def _create_list_frame(self, parent: ttk.Frame):
@@ -59,22 +60,6 @@ class RegistroTarefas:
 
         ttk.Button(button_frame, text="Adicionar Tarefa", command=self.show_add_tarefa_popup).pack(side="left", padx=5, expand=True, fill="x")
         ttk.Button(button_frame, text="Deletar Tarefa", command=self.delete_selected_tarefa).pack(side="left", padx=5, expand=True, fill="x")
-
-    def _center_window(self):
-        """Centraliza o popup na janela pai."""
-        self.popup.update_idletasks()
-        width = self.popup.winfo_reqwidth()
-        height = self.popup.winfo_reqheight()
-        
-        parent_x = self.parent.winfo_rootx()
-        parent_y = self.parent.winfo_rooty()
-        parent_width = self.parent.winfo_width()
-        parent_height = self.parent.winfo_height()
-        
-        x = parent_x + (parent_width // 2) - (width // 2)
-        y = parent_y + (parent_height // 2) - (height // 2)
-        
-        self.popup.geometry(f"+{x}+{y}")
 
     def populate_tarefas_list(self):
         """Preenche a lista de tarefas com as tarefas existentes."""

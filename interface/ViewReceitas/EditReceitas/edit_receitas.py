@@ -7,6 +7,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 
 from interface.utils.form_entry import FormEntry
+from interface.utils.window_utils import center_window
 from database.receitas import update_receita
 
 class EditReceitas:
@@ -25,13 +26,7 @@ class EditReceitas:
         # 3. Botão salvar que atualiza os dados no banco de dados e botão cancelar para fechar o pop-up
         self.create_buttons()
 
-        # Centralizar popup ajustando ao tamanho do conteúdo
-        self.popup.update_idletasks()
-        width = self.popup.winfo_reqwidth()
-        height = self.popup.winfo_reqheight()
-        x = parent.winfo_rootx() + (parent.winfo_width() // 2) - (width // 2)
-        y = parent.winfo_rooty() + (parent.winfo_height() // 2) - (height // 2)
-        self.popup.geometry(f"+{x}+{y}")
+        center_window(self.popup, parent)
 
     def create_form(self):
         # Frame principal do formulário
