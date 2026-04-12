@@ -29,24 +29,28 @@ class ReceitasFrame(ttk.Frame):
         management_frame = ttk.LabelFrame(self, text="Gerenciar Receita")
         management_frame.pack(fill="x", padx=5, pady=5)
 
-        # --- Botões de Ação ---
-        button_frame = ttk.Frame(management_frame)
-        button_frame.pack(pady=5, padx=5, anchor="w")
-        
+        # --- Linha única com botões à esquerda e pesquisa à direita ---
+        toolbar_frame = ttk.Frame(management_frame)
+        toolbar_frame.pack(fill="x", padx=5, pady=5)
+
+        # --- Botões de Ação (lado esquerdo) ---
+        button_frame = ttk.Frame(toolbar_frame)
+        button_frame.pack(side="left")
+
         ttk.Button(button_frame, text="Nova Receita", command=self.show_add_receita_popup).pack(side="left", padx=(0, 5))
         ttk.Button(button_frame, text="Tarefas Salvas", command=self.show_saved_tarefas_popup).pack(side="left")
         ttk.Button(button_frame, text="Atualizar Lista", command=self.populate_receitas_list).pack(side="left", padx=(5, 0))
 
-        # --- Barra de Pesquisa ---
-        search_frame = ttk.Frame(management_frame)
-        search_frame.pack(pady=(0, 5), padx=5, anchor="w")
+        # --- Barra de Pesquisa (lado direito) ---
+        search_frame = ttk.Frame(toolbar_frame)
+        search_frame.pack(side="right")
 
-        ttk.Label(search_frame, text="Pesquisar por cliente:").pack(side="left", padx=(0, 5))
+        ttk.Button(search_frame, text="Limpar", command=self._clear_search).pack(side="right", padx=(5, 0))
         self._search_var = tk.StringVar()
         self._search_var.trace_add("write", self._on_search_changed)
         search_entry = ttk.Entry(search_frame, textvariable=self._search_var, width=30)
-        search_entry.pack(side="left")
-        ttk.Button(search_frame, text="Limpar", command=self._clear_search).pack(side="left", padx=(5, 0))
+        search_entry.pack(side="right")
+        ttk.Label(search_frame, text="Pesquisar por cliente:").pack(side="right", padx=(0, 5))
 
         # --- Frame da Lista de Receitas ---
         list_frame = ttk.LabelFrame(self, text="Receitas Cadastradas")
