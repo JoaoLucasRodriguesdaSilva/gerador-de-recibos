@@ -55,9 +55,5 @@ class AdicionarTarefa:
 
     def on_save(self):
         """Coleta os dados e chama a função de callback para salvar."""
-        data = {"nome": self.nome_entry.get()}
-        self.save_callback(data, self.popup)
-        data = {
-            "nome": self.nome_entry.get_entry_value(),
-        }
+        data = {"nome": self.nome_entry.get_entry_value()}
         self.save_callback(data, self.popup)
