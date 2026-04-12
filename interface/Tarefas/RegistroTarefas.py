@@ -1,10 +1,7 @@
-import os
-import sys
 import tkinter as tk
 from tkinter import ttk, messagebox
 from typing import Dict, Any, Callable
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 from database.tarefas import add_tarefa, get_all_tarefas, delete_tarefa
 from interface.Tarefas.AdicionarTarefa.AdicionarTarefa import AdicionarTarefa
 from interface.utils.window_utils import center_window

@@ -1,10 +1,5 @@
 import tkinter as tk
 from tkinter import ttk
-import sys
-import os
-
-# Adiciona o diretório raiz do projeto ao sys.path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 
 from interface.utils.form_entry import FormEntry
 from interface.utils.window_utils import center_window

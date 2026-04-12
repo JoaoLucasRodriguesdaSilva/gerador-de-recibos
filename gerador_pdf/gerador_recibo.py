@@ -1,5 +1,3 @@
-import os
-import sys
 from typing import List, Dict, Any
 
 from reportlab.lib import colors
@@ -8,8 +6,6 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 
-# Adiciona o diretório raiz ao path se necessário para importação do database
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from database.receita_tarefa import get_valor_total_from_receita, get_tarefas_from_receita
 from database.receitas import get_receita_by_id
 

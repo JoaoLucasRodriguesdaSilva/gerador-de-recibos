@@ -1,11 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-import sys
 import os
 from typing import List, Tuple, Optional, Dict, Any
-
-# Adiciona o diretório raiz do projeto ao sys.path para encontrar os módulos do banco de dados
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
 from database.tarefas import get_all_tarefas
 from database.receita_tarefa import add_tarefa_to_receita
