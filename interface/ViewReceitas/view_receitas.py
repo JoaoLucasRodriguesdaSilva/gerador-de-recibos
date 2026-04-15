@@ -1,17 +1,15 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-import sys
-import os
-
-# Adiciona o diretório raiz do projeto ao sys.path para encontrar os módulos do banco de dados
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
 from database.receitas import get_receita_by_id, delete_receita
 from database.receita_tarefa import get_tarefas_from_receita, remove_tarefa_from_receita
 from interface.ReceitaTarefas.ReceitaTarefas import ReceitasTarefas
 from interface.ViewReceitas.EditReceitas.edit_receitas import EditReceitas
+from interface.utils.window_utils import center_window
 
 class ViewReceita:
+    """Janela popup para visualizar, editar e deletar uma receita e suas tarefas."""
+
     def __init__(self, parent, receita_id):
         self.parent = parent
         self.receita_id = receita_id
@@ -29,21 +27,8 @@ class ViewReceita:
         
         # Configuração inicial de tamanho (será ajustado pelo conteúdo, mas definimos um mínimo)
         self.popup.minsize(600, 400)
-
-        # Centraliza o popup na janela pai
-        self.popup.update_idletasks()
-        parent_x = self.parent.winfo_rootx()
-        parent_y = self.parent.winfo_rooty()
-        parent_width = self.parent.winfo_width()
-        parent_height = self.parent.winfo_height()
-        
-        # Tamanho estimado inicial
-        popup_width = 600
-        popup_height = 500
-        
-        x = parent_x + (parent_width // 2) - (popup_width // 2)
-        y = parent_y + (parent_height // 2) - (popup_height // 2)
-        self.popup.geometry(f'{popup_width}x{popup_height}+{x}+{y}')
+        self.popup.geometry("600x500")
+        center_window(self.popup, self.parent)
 
         self.popup.grab_set()
 
@@ -57,25 +42,25 @@ class ViewReceita:
 
         # Linha 0
         ttk.Label(self.info_frame, text="Cliente:", font=("", 9, "bold")).grid(row=0, column=0, sticky="e", padx=5, pady=2)
-        self.cliente_label = ttk.Label(self.info_frame, text=self.receita[1])
+        self.cliente_label = ttk.Label(self.info_frame, text=self.receita.cliente)
         self.cliente_label.grid(row=0, column=1, sticky="w", padx=5, pady=2)
 
         ttk.Label(self.info_frame, text="Motor/Cabeçote:", font=("", 9, "bold")).grid(row=0, column=2, sticky="e", padx=5, pady=2)
-        self.motor_label = ttk.Label(self.info_frame, text=self.receita[3])
+        self.motor_label = ttk.Label(self.info_frame, text=self.receita.motor_cabecote)
         self.motor_label.grid(row=0, column=3, sticky="w", padx=5, pady=2)
 
         # Linha 1
         ttk.Label(self.info_frame, text="Oficina:", font=("", 9, "bold")).grid(row=1, column=0, sticky="e", padx=5, pady=2)
-        self.oficina_label = ttk.Label(self.info_frame, text=self.receita[2])
+        self.oficina_label = ttk.Label(self.info_frame, text=self.receita.oficina)
         self.oficina_label.grid(row=1, column=1, sticky="w", padx=5, pady=2)
 
         ttk.Label(self.info_frame, text="Placa:", font=("", 9, "bold")).grid(row=1, column=2, sticky="e", padx=5, pady=2)
-        self.placa_label = ttk.Label(self.info_frame, text=self.receita[4])
+        self.placa_label = ttk.Label(self.info_frame, text=self.receita.placa)
         self.placa_label.grid(row=1, column=3, sticky="w", padx=5, pady=2)
 
         # Linha 2
         ttk.Label(self.info_frame, text="Data:", font=("", 9, "bold")).grid(row=2, column=0, sticky="e", padx=5, pady=2)
-        self.data_label = ttk.Label(self.info_frame, text=self.receita[5])
+        self.data_label = ttk.Label(self.info_frame, text=self.receita.data)
         self.data_label.grid(row=2, column=1, sticky="w", padx=5, pady=2)
 
         # --- Frame de Tarefas ---
@@ -127,24 +112,15 @@ class ViewReceita:
             
         tarefas = get_tarefas_from_receita(self.receita_id)
         for t in tarefas:
-            # t = (id, nome, quantidade, valor, observacoes)
-            t_id = t[0]
-            qtd = t[2]
-            nome = t[1]
-            valor = t[3]
-            obs = t[4]
-            
-            # Formata valor
-            valor_fmt = f"R$ {valor:.2f}".replace('.', ',')
-            
-            self.tree.insert("", "end", values=(t_id, qtd, nome, valor_fmt, obs))
+            valor_fmt = f"R$ {t.valor:.2f}".replace('.', ',')
+            self.tree.insert("", "end", values=(t.id, t.quantidade, t.nome, valor_fmt, t.observacoes))
 
     def update_info_labels(self):
-        self.cliente_label.config(text=self.receita[1])
-        self.oficina_label.config(text=self.receita[2])
-        self.motor_label.config(text=self.receita[3])
-        self.placa_label.config(text=self.receita[4])
-        self.data_label.config(text=self.receita[5])
+        self.cliente_label.config(text=self.receita.cliente)
+        self.oficina_label.config(text=self.receita.oficina)
+        self.motor_label.config(text=self.receita.motor_cabecote)
+        self.placa_label.config(text=self.receita.placa)
+        self.data_label.config(text=self.receita.data)
 
     def edit_receita(self):
         edit_app = EditReceitas(self.popup, self.receita)

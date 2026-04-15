@@ -1,25 +1,23 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-import sys
 import os
-from typing import List, Tuple, Optional, Dict, Any
+from typing import List, Optional, Dict, Any
 
-# Adiciona o diretório raiz do projeto ao sys.path para encontrar os módulos do banco de dados
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
-
+from database.models import Receita
 from database.tarefas import get_all_tarefas
 from database.receita_tarefa import add_tarefa_to_receita
 from database.receitas import add_receita
 from gerador_pdf.gerador_recibo import gerar_pdf_orcamento
-from interface.utils.app_paths import get_receitas_dir
+from interface.utils.app_paths import get_receitas_dir, build_pdf_filename
+from interface.utils.window_utils import center_window
 
 class ReceitasTarefas:
     """Janela para associar tarefas a uma receita e gerar o recibo."""
 
-    def __init__(self, parent: tk.Widget, receita: Tuple[Optional[int], str, str, str, str, str]):
+    def __init__(self, parent: tk.Widget, receita: Receita):
         self.parent = parent
         self.receita = receita
-        self.receita_id = receita[0]
+        self.receita_id = receita.id
 
         self.tarefas_map: Dict[str, int] = {}
         self.todas_tarefas: List[str] = []
@@ -32,7 +30,7 @@ class ReceitasTarefas:
         """Carrega as tarefas do banco de dados."""
         try:
             tarefas_db = get_all_tarefas()
-            self.tarefas_map = {t[1]: t[0] for t in tarefas_db}
+            self.tarefas_map = {t.nome: t.id for t in tarefas_db}
             self.todas_tarefas = list(self.tarefas_map.keys())
         except Exception as e:
             messagebox.showerror("Erro", f"Erro ao carregar tarefas: {e}")
@@ -50,7 +48,7 @@ class ReceitasTarefas:
         self._create_list_frame()
         self._create_buttons_frame()
         
-        self._center_window()
+        center_window(self.popup, self.parent)
         self.popup.grab_set()
 
     def _create_info_frame(self):
@@ -60,11 +58,11 @@ class ReceitasTarefas:
 
         # Labels com grid
         labels = [
-            (f"Cliente: {self.receita[1]}", 0, 0),
-            (f"Motor/Cabeçote: {self.receita[3]}", 0, 1),
-            (f"Oficina: {self.receita[2]}", 1, 0),
-            (f"Placa: {self.receita[4]}", 1, 1),
-            (f"Data: {self.receita[5]}", 2, 0),
+            (f"Cliente: {self.receita.cliente}", 0, 0),
+            (f"Motor/Cabeçote: {self.receita.motor_cabecote}", 0, 1),
+            (f"Oficina: {self.receita.oficina}", 1, 0),
+            (f"Placa: {self.receita.placa}", 1, 1),
+            (f"Data: {self.receita.data}", 2, 0),
         ]
 
         for text, row, col in labels:
@@ -138,22 +136,6 @@ class ReceitasTarefas:
         ttk.Button(frame, text="Remover da Lista", command=self.remover).pack(side="left", padx=5, expand=True, fill="x")
         ttk.Button(frame, text="Salvar no Banco e Fechar", command=self.salvar_no_banco).pack(side="left", padx=5, expand=True, fill="x")
 
-    def _center_window(self):
-        """Centraliza o popup na janela pai."""
-        self.popup.update_idletasks()
-        width = self.popup.winfo_reqwidth()
-        height = self.popup.winfo_reqheight()
-        
-        parent_x = self.parent.winfo_rootx()
-        parent_y = self.parent.winfo_rooty()
-        parent_width = self.parent.winfo_width()
-        parent_height = self.parent.winfo_height()
-        
-        x = parent_x + (parent_width // 2) - (width // 2)
-        y = parent_y + (parent_height // 2) - (height // 2)
-        
-        self.popup.geometry(f"+{x}+{y}")
-
     def associar_tarefa(self):
         """Adiciona a tarefa à lista visual (não salva no banco ainda)."""
         quantidade = self.entry_quantidade.get().strip()
@@ -208,8 +190,13 @@ class ReceitasTarefas:
         try:
             # Se a receita ainda não tem ID (é nova), salva ela primeiro
             if self.receita_id is None:
-                _, cliente, oficina, motor, placa, data_str = self.receita
-                self.receita_id = add_receita(cliente, oficina, motor, placa, data_str)
+                self.receita_id = add_receita(
+                    self.receita.cliente,
+                    self.receita.oficina,
+                    self.receita.motor_cabecote,
+                    self.receita.placa,
+                    self.receita.data,
+                )
                 
                 if hasattr(self.parent, 'populate_receitas_list'):
                     self.parent.populate_receitas_list()
@@ -236,14 +223,7 @@ class ReceitasTarefas:
         recibos_dir = get_receitas_dir()
         os.makedirs(recibos_dir, exist_ok=True)
         
-        # Formata o nome do arquivo: Cliente_Placa_Data.pdf
-        # self.receita = (id, cliente, oficina, motor, placa, data)
-        cliente = str(self.receita[1]).strip().replace(" ", "_")
-        placa = str(self.receita[4]).strip().replace(" ", "_")
-        data = str(self.receita[5]).strip().replace("/", "-")
-        
-        filename = f"{cliente}_{placa}_{data}.pdf"
-        output_file = os.path.join(recibos_dir, filename)
+        output_file = build_pdf_filename(self.receita)
         
         try:
             gerar_pdf_orcamento(self.receita_id, output_file)

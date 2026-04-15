@@ -1,6 +1,7 @@
 # Este arquivo contem as requisições das receitas
 import sqlite3
 from .criar_bd import connect_db
+from .models import Receita
 
 # Criar receita
 def add_receita(cliente, oficina, motor_cabecote, placa, data):
@@ -27,7 +28,7 @@ def get_all_receitas():
     try:
         cursor = conn.cursor()
         cursor.execute('SELECT * FROM receitas')
-        return cursor.fetchall()
+        return [Receita(*row) for row in cursor.fetchall()]
     except sqlite3.Error as e:
         print(f"Erro ao buscar receitas: {e}")
         return []
@@ -41,7 +42,8 @@ def get_receita_by_id(receita_id):
     try:
         cursor = conn.cursor()
         cursor.execute('SELECT * FROM receitas WHERE id = ?', (receita_id,))
-        return cursor.fetchone()
+        row = cursor.fetchone()
+        return Receita(*row) if row else None
     except sqlite3.Error as e:
         print(f"Erro ao buscar receita por ID: {e}")
         return None
@@ -56,7 +58,7 @@ def get_receita_by_oficina(oficina):
         cursor = conn.cursor()
         search_term = f'%{oficina}%'
         cursor.execute('SELECT * FROM receitas WHERE oficina LIKE ?', (search_term,))
-        return cursor.fetchall()
+        return [Receita(*row) for row in cursor.fetchall()]
     except sqlite3.Error as e:
         print(f"Erro ao buscar receita por oficina: {e}")
         return []
@@ -71,7 +73,7 @@ def get_receita_by_cliente(cliente):
         cursor = conn.cursor()
         search_term = f'%{cliente}%'
         cursor.execute('SELECT * FROM receitas WHERE cliente LIKE ?', (search_term,))
-        return cursor.fetchall()
+        return [Receita(*row) for row in cursor.fetchall()]
     except sqlite3.Error as e:
         print(f"Erro ao buscar receita por cliente: {e}")
         return []
@@ -85,7 +87,7 @@ def get_receita_by_data(data):
     try:
         cursor = conn.cursor()
         cursor.execute('SELECT * FROM receitas WHERE data = ?', (data,))
-        return cursor.fetchall()
+        return [Receita(*row) for row in cursor.fetchall()]
     except sqlite3.Error as e:
         print(f"Erro ao buscar receita por data: {e}")
         return []

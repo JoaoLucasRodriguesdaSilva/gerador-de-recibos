@@ -1,13 +1,9 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-import sys
-import os
 from typing import Dict, Any
 
-# Adiciona o diretório raiz do projeto ao sys.path para encontrar os módulos do banco de dados
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
-
 from database.receitas import get_all_receitas, delete_receita
+from database.models import Receita
 from interface.Receitas.popup.PopupReceita import PopupReceita
 from interface.Tarefas.RegistroTarefas import RegistroTarefas
 from interface.ReceitaTarefas.ReceitaTarefas import ReceitasTarefas
@@ -19,6 +15,7 @@ class ReceitasFrame(ttk.Frame):
     def __init__(self, parent: tk.Widget):
         super().__init__(parent)
         
+        self._all_receitas = []
         self.create_widgets()
         self.populate_receitas_list()
 
@@ -28,13 +25,28 @@ class ReceitasFrame(ttk.Frame):
         management_frame = ttk.LabelFrame(self, text="Gerenciar Receita")
         management_frame.pack(fill="x", padx=5, pady=5)
 
-        # --- Botões de Ação ---
-        button_frame = ttk.Frame(management_frame)
-        button_frame.pack(pady=5, padx=5, anchor="w")
-        
+        # --- Linha única com botões à esquerda e pesquisa à direita ---
+        toolbar_frame = ttk.Frame(management_frame)
+        toolbar_frame.pack(fill="x", padx=5, pady=5)
+
+        # --- Botões de Ação (lado esquerdo) ---
+        button_frame = ttk.Frame(toolbar_frame)
+        button_frame.pack(side="left")
+
         ttk.Button(button_frame, text="Nova Receita", command=self.show_add_receita_popup).pack(side="left", padx=(0, 5))
         ttk.Button(button_frame, text="Tarefas Salvas", command=self.show_saved_tarefas_popup).pack(side="left")
         ttk.Button(button_frame, text="Atualizar Lista", command=self.populate_receitas_list).pack(side="left", padx=(5, 0))
+
+        # --- Barra de Pesquisa (lado direito) ---
+        search_frame = ttk.Frame(toolbar_frame)
+        search_frame.pack(side="right")
+
+        ttk.Button(search_frame, text="Limpar", command=self._clear_search).pack(side="right", padx=(5, 0))
+        self._search_var = tk.StringVar()
+        self._search_var.trace_add("write", self._on_search_changed)
+        search_entry = ttk.Entry(search_frame, textvariable=self._search_var, width=30)
+        search_entry.pack(side="right")
+        ttk.Label(search_frame, text="Pesquisar por cliente:").pack(side="right", padx=(0, 5))
 
         # --- Frame da Lista de Receitas ---
         list_frame = ttk.LabelFrame(self, text="Receitas Cadastradas")
@@ -74,11 +86,31 @@ class ReceitasFrame(ttk.Frame):
             self.tree.delete(item)
             
         try:
-            receitas = get_all_receitas()
-            for receita in receitas:
-                self.tree.insert("", "end", values=receita)
+            self._all_receitas = get_all_receitas()
+            self._apply_search_filter()
         except Exception as e:
             messagebox.showerror("Erro", f"Erro ao carregar receitas: {e}")
+
+    def _apply_search_filter(self):
+        """Filtra as receitas exibidas na Treeview com base no texto de pesquisa."""
+        if not hasattr(self, "tree") or not hasattr(self, "_all_receitas"):
+            return
+
+        for item in self.tree.get_children():
+            self.tree.delete(item)
+
+        query = self._search_var.get().strip().lower()
+        for receita in self._all_receitas:
+            if query in receita.cliente.lower():
+                self.tree.insert("", "end", values=receita)
+
+    def _on_search_changed(self, *args):
+        """Chamado sempre que o texto da barra de pesquisa muda."""
+        self._apply_search_filter()
+
+    def _clear_search(self):
+        """Limpa o campo de pesquisa."""
+        self._search_var.set("")
 
     def save_receita(self, data: Dict[str, Any], popup: tk.Toplevel):
         """
@@ -102,7 +134,7 @@ class ReceitasFrame(ttk.Frame):
         # Abre o popup de tarefas para a nova receita
         # Passamos None como ID pois a receita ainda não foi salva no banco
         # A classe ReceitasTarefas lidará com a criação do registro no banco
-        nova_receita = (None, cliente, oficina, motor, placa, data_str)
+        nova_receita = Receita(id=None, cliente=cliente, oficina=oficina, motor_cabecote=motor, placa=placa, data=data_str)
         ReceitasTarefas(self, receita=nova_receita)
 
     def view_selected_receita(self):

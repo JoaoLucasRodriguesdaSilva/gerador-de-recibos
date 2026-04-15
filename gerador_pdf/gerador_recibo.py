@@ -1,5 +1,3 @@
-import os
-import sys
 from typing import List, Dict, Any
 
 from reportlab.lib import colors
@@ -8,8 +6,6 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 
-# Adiciona o diretório raiz ao path se necessário para importação do database
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from database.receita_tarefa import get_valor_total_from_receita, get_tarefas_from_receita
 from database.receitas import get_receita_by_id
 
@@ -37,25 +33,25 @@ def gerar_pdf_orcamento(receita_id: int, nome_arquivo: str):
         print(f"Erro: Receita ID {receita_id} não encontrada.")
         return
 
-    # Mapeia tupla para dicionário (id, cliente, oficina, motor_cabecote, placa, data)
+    # Mapeia campos da receita para dicionário
     dados_receita = {
-        'cliente': receita_tuple[1],
-        'oficina': receita_tuple[2],
-        'motor_cabecote': receita_tuple[3],
-        'placa': receita_tuple[4],
-        'data': receita_tuple[5]
+        'cliente': receita_tuple.cliente,
+        'oficina': receita_tuple.oficina,
+        'motor_cabecote': receita_tuple.motor_cabecote,
+        'placa': receita_tuple.placa,
+        'data': receita_tuple.data
     }
 
     # Busca tarefas da receita no banco
     tarefas_tuples = get_tarefas_from_receita(receita_id)
-    # Mapeia tuplas para lista de dicionários (id, nome, quantidade, valor, observacoes)
+    # Mapeia para lista de dicionários
     dados_tarefas = []
     for t in tarefas_tuples:
         dados_tarefas.append({
-            'descricao': t[1],
-            'quantidade': t[2],
-            'valor': t[3],
-            'observacao': t[4]
+            'descricao': t.nome,
+            'quantidade': t.quantidade,
+            'valor': t.valor,
+            'observacao': t.observacoes
         })
 
     # Configuração do Documento
@@ -191,7 +187,7 @@ def gerar_pdf_orcamento(receita_id: int, nome_arquivo: str):
             val = float(val_str)
             if val > 0 or (qtd and qtd != "0"):
                 estilo_tabela_itens.add('FONTNAME', (0, i), (-1, i), 'Helvetica-Bold')
-        except:
+        except (ValueError, TypeError):
             pass
 
     tabela_itens.setStyle(estilo_tabela_itens)
