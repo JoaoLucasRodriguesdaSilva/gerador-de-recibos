@@ -64,5 +64,5 @@ if __name__ == "__main__":
     # Cria uma raiz Tk oculta se executado diretamente
     root = tk.Tk()
     root.withdraw()
-    selecionar_e_imprimir()
+    imprimir_arquivo("Roberio_POD3B41_01-01-2026.pdf")
     root.destroy()
