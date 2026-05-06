@@ -66,6 +66,10 @@ class ViewReceita:
         self.data_label = ttk.Label(self.info_frame, text=self.receita.data)
         self.data_label.grid(row=2, column=1, sticky="w", padx=5, pady=2)
 
+        ttk.Label(self.info_frame, text="Total:", font=("", 9, "bold")).grid(row=2, column=2, sticky="e", padx=5, pady=2)
+        self.total_label = ttk.Label(self.info_frame, text="R$ 0,00")
+        self.total_label.grid(row=2, column=3, sticky="w", padx=5, pady=2)
+
         # --- Frame de Tarefas ---
         self.tarefas_frame = ttk.LabelFrame(self.popup, text="Tarefas Associadas")
         self.tarefas_frame.pack(fill="both", expand=True, padx=10, pady=5)
@@ -114,9 +118,13 @@ class ViewReceita:
             self.tree.delete(item)
             
         tarefas = get_tarefas_from_receita(self.receita_id)
+        total_valor = 0.0
         for t in tarefas:
             valor_fmt = f"R$ {t.valor:.2f}".replace('.', ',')
             self.tree.insert("", "end", values=(t.id, t.quantidade, t.nome, valor_fmt, t.observacoes))
+            total_valor += t.valor
+            
+        self.total_label.config(text=f"R$ {total_valor:.2f}".replace('.', ','))
 
     def update_info_labels(self):
         self.cliente_label.config(text=self.receita.cliente)
