@@ -15,9 +15,11 @@ def add_tarefa(nome):
                 VALUES (?)
             ''', (nome,))
             return cursor.lastrowid
+    except sqlite3.IntegrityError:
+        raise Exception("Já existe uma tarefa cadastrada com este nome.")
     except sqlite3.Error as e:
         print(f"Erro ao adicionar tarefa: {e}")
-        return None
+        raise e
     finally:
         conn.close()
 
@@ -90,7 +92,10 @@ def delete_tarefa(tarefa_id):
     try:
         with conn:
             conn.execute('DELETE FROM tarefas WHERE id = ?', (tarefa_id,))
+    except sqlite3.IntegrityError:
+        raise Exception("Esta tarefa não pode ser apagada pois está associada a um ou mais recibos.")
     except sqlite3.Error as e:
         print(f"Erro ao deletar tarefa: {e}")
+        raise e
     finally:
         conn.close()
