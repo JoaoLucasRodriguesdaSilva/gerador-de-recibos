@@ -1,11 +1,14 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
+import os
 
 from database.receitas import get_receita_by_id, delete_receita
 from database.receita_tarefa import get_tarefas_from_receita, remove_tarefa_from_receita
 from interface.ReceitaTarefas.ReceitaTarefas import ReceitasTarefas
 from interface.ViewReceitas.EditReceitas.edit_receitas import EditReceitas
 from interface.utils.window_utils import center_window
+from gerador_pdf.gerador_recibo import gerar_pdf_orcamento
+from interface.utils.app_paths import get_receitas_dir, build_pdf_filename
 
 class ViewReceita:
     """Janela popup para visualizar, editar e deletar uma receita e suas tarefas."""
@@ -63,6 +66,10 @@ class ViewReceita:
         self.data_label = ttk.Label(self.info_frame, text=self.receita.data)
         self.data_label.grid(row=2, column=1, sticky="w", padx=5, pady=2)
 
+        ttk.Label(self.info_frame, text="Total:", font=("", 9, "bold")).grid(row=2, column=2, sticky="e", padx=5, pady=2)
+        self.total_label = ttk.Label(self.info_frame, text="R$ 0,00")
+        self.total_label.grid(row=2, column=3, sticky="w", padx=5, pady=2)
+
         # --- Frame de Tarefas ---
         self.tarefas_frame = ttk.LabelFrame(self.popup, text="Tarefas Associadas")
         self.tarefas_frame.pack(fill="both", expand=True, padx=10, pady=5)
@@ -103,7 +110,7 @@ class ViewReceita:
         ttk.Button(self.button_frame, text="Adicionar Tarefa", command=self.add_tarefa).grid(row=0, column=1, padx=5, pady=5, sticky="ew")
 
         # Botões Inferiores
-        ttk.Button(self.button_frame, text="Deletar Receita", command=self.delete_receita_action).grid(row=1, column=0, padx=5, pady=5, sticky="ew")
+        ttk.Button(self.button_frame, text="Gerar PDF", command=self.gerar_pdf_action).grid(row=1, column=0, padx=5, pady=5, sticky="ew")
         ttk.Button(self.button_frame, text="Deletar Tarefa", command=self.delete_tarefa_action).grid(row=1, column=1, padx=5, pady=5, sticky="ew")
 
     def populate_tarefas(self):
@@ -111,9 +118,13 @@ class ViewReceita:
             self.tree.delete(item)
             
         tarefas = get_tarefas_from_receita(self.receita_id)
+        total_valor = 0.0
         for t in tarefas:
             valor_fmt = f"R$ {t.valor:.2f}".replace('.', ',')
             self.tree.insert("", "end", values=(t.id, t.quantidade, t.nome, valor_fmt, t.observacoes))
+            total_valor += t.valor
+            
+        self.total_label.config(text=f"R$ {total_valor:.2f}".replace('.', ','))
 
     def update_info_labels(self):
         self.cliente_label.config(text=self.receita.cliente)
@@ -136,19 +147,17 @@ class ViewReceita:
         self.popup.wait_window(app.popup)
         self.populate_tarefas()
 
-    def delete_receita_action(self):
-        if messagebox.askyesno("Confirmar Deleção", "Tem certeza que deseja deletar esta receita e todas as suas tarefas?", parent=self.popup):
-            try:
-                delete_receita(self.receita_id)
-                messagebox.showinfo("Sucesso", "Receita deletada com sucesso.", parent=self.popup)
-                self.popup.destroy()
-                # Tenta atualizar a lista pai se o método existir
-                if hasattr(self.parent, 'populate_receitas_list'):
-                    self.parent.populate_receitas_list()
-                # Caso o parent seja um frame dentro de outro container, pode ser necessário subir na hierarquia
-                # Mas assumindo que parent é ReceitasFrame, deve funcionar.
-            except Exception as e:
-                messagebox.showerror("Erro", f"Erro ao deletar receita: {e}", parent=self.popup)
+    def gerar_pdf_action(self):
+        recibos_dir = get_receitas_dir()
+        os.makedirs(recibos_dir, exist_ok=True)
+        
+        output_file = build_pdf_filename(self.receita)
+        
+        try:
+            gerar_pdf_orcamento(self.receita_id, output_file)
+            messagebox.showinfo("Sucesso", f"PDF gerado com sucesso em:\n{output_file}", parent=self.popup)
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao gerar PDF: {e}", parent=self.popup)
 
     def delete_tarefa_action(self):
         selected_item = self.tree.selection()
