@@ -68,7 +68,7 @@ if __name__ == "__main__":
         caminho = sys.argv[1]
         root = tk.Tk()
         root.withdraw()
-        imprimir_arquivo(caminho)
+        imprimir_arquivo("C:\Users\Efrain\Desktop\Efraim\gerador-de-recibos\receitas\Jurandir_ABC1234_29-12-2025.pdf")
         root.destroy()
     else:
         root = tk.Tk()
